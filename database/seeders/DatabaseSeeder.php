@@ -11,6 +11,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,  // On le met en premier, AdminSeeder en dépend
             AdminSeeder::class,
+            StaffSeeder::class,  
+            EquipmentCategorySeeder::class,
+            EquipmentSeeder::class,
+            MaintenanceSeeder::class,
+            BreakdownSeeder::class,
         ]);
     }
 }
