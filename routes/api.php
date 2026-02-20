@@ -8,6 +8,11 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\BreakdownController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 
 // Routes publiques
 Route::prefix('v1')->group(function () {
@@ -57,5 +62,66 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::put('/breakdowns/{id}', [BreakdownController::class, 'update'])->middleware('role:admin,gestionnaire,technicien');
     Route::delete('/breakdowns/{id}', [BreakdownController::class, 'destroy'])->middleware('role:admin');
 
+    
+
+});
+
+Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+
+    // Product Categories — lecture pour tous les connectés
+    Route::get('product-categories', [ProductCategoryController::class, 'index']);
+    Route::get('product-categories/{id}', [ProductCategoryController::class, 'show']);
+
+    // Products — lecture pour tous les connectés
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/{id}', [ProductController::class, 'show']);
+
+    // Cart — client uniquement
+    Route::middleware('role:client')->group(function () {
+        Route::get('cart', [CartController::class, 'index']);
+        Route::post('cart/items', [CartController::class, 'addItem']);
+        Route::put('cart/items/{cartItemId}', [CartController::class, 'updateItem']);
+        Route::delete('cart/items/{cartItemId}', [CartController::class, 'removeItem']);
+        Route::delete('cart', [CartController::class, 'clear']);
+    });
+
+    // Orders — client uniquement
+    Route::middleware('role:client')->group(function () {
+        Route::get('orders', [OrderController::class, 'index']);
+        Route::get('orders/{id}', [OrderController::class, 'show']);
+        Route::post('orders/checkout', [OrderController::class, 'checkout']);
+        Route::put('orders/{id}/cancel', [OrderController::class, 'cancel']);
+    });
+
+    // Payments — client uniquement
+    Route::middleware('role:client')->group(function () {
+        Route::get('payments', [PaymentController::class, 'userPayments']);
+        Route::get('payments/{id}', [PaymentController::class, 'show']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routes Admin
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->prefix('admin')->group(function () {
+
+        // Product Categories — gestion admin
+        Route::post('product-categories', [ProductCategoryController::class, 'store']);
+        Route::put('product-categories/{id}', [ProductCategoryController::class, 'update']);
+        Route::delete('product-categories/{id}', [ProductCategoryController::class, 'destroy']);
+
+        // Products — gestion admin
+        Route::post('products', [ProductController::class, 'store']);
+        Route::post('products/{id}', [ProductController::class, 'update']);
+        Route::delete('products/{id}', [ProductController::class, 'destroy']);
+
+        // Orders — gestion statuts admin
+        Route::get('orders', [OrderController::class, 'adminIndex']);
+        Route::put('orders/{id}/status', [OrderController::class, 'updateStatus']);
+
+        // Payments — vue admin
+        Route::get('payments', [PaymentController::class, 'index']);
+    });
 });
 

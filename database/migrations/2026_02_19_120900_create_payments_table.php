@@ -7,19 +7,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    {
-        Schema::create('payments', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('order_id');
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->decimal('amount', 10, 2);
-            $table->string('method');
-            $table->enum('status', ['pending', 'successful', 'failed', 'refunded'])->default('pending');
-            $table->string('transaction_reference')->nullable();
-            $table->dateTime('paid_at')->nullable();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('payments', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+        $table->decimal('amount', 10, 2);
+        $table->string('method');
+        $table->enum('status', ['pending', 'successful', 'failed', 'refunded'])->default('pending');
+        $table->string('transaction_reference')->nullable();
+        $table->dateTime('paid_at')->nullable();
+        $table->timestamps();
+    });
+}
 
     public function down(): void
     {
