@@ -44,6 +44,31 @@ class OrderController extends Controller
     }
 
     /**
+ * @OA\Get(
+ *     path="/api/admin/orders",
+ *     summary="Lister toutes les commandes (Admin)",
+ *     tags={"Orders"},
+ *     security={{"sanctum": {}}},
+ *     @OA\Response(response=200, description="Liste de toutes les commandes")
+ * )
+ */
+public function adminIndex()
+{
+    $orders = Order::with('items.product', 'payment', 'user')
+        ->orderBy('created_at', 'desc')
+        ->paginate(15);
+
+    return response()->json([
+        'success'      => true,
+        'data'         => $orders->items(),
+        'current_page' => $orders->currentPage(),
+        'last_page'    => $orders->lastPage(),
+        'per_page'     => $orders->perPage(),
+        'total'        => $orders->total(),
+    ], 200);
+}
+
+    /**
      * @OA\Get(
      *     path="/api/orders/{id}",
      *     summary="Afficher le détail d'une commande",
