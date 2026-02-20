@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-/**
- * @OA\Info(
- *     title="API Documentation",
- *     version="1.0.0"
- * )
- *
- * @OA\Server(
- *     url="/api/v1",
- *     description="API Server"
- * )
- */
-abstract class Controller 
+use OpenApi\Attributes as OA;
+
+#[OA\Info(
+    title: 'BMI API',
+    version: '1.0.0',
+    description: 'Documentation de l\'API BMI — Module Equipements & E-commerce'
+)]
+#[OA\Server(
+    url: L5_SWAGGER_CONST_HOST,
+    description: 'Serveur local'
+)]
+abstract class Controller
 {
-    
+    //
 }

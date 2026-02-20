@@ -6,23 +6,22 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 
-/**
- * @OA\Tag(
- *     name="Payments",
- *     description="Consultation des paiements"
- * )
- */
+#[OA\Tag(name: 'Payments', description: 'Consultation des paiements')]
+
+
 class PaymentController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/api/payments",
-     *     summary="Lister les paiements de l'utilisateur connecté",
-     *     tags={"Payments"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="Liste des paiements de l'utilisateur")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/payments',
+        summary: 'Lister les paiements de l\'utilisateur connecté',
+        security: [['sanctum' => []]],
+        tags: ['Payments'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des paiements de l\'utilisateur')
+        ]
+    )]
+
+
     public function userPayments(Request $request)
     {
         $payments = Payment::with('order')
@@ -38,21 +37,22 @@ class PaymentController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/payments/{id}",
-     *     summary="Afficher le détail d'un paiement (Utilisateur)",
-     *     tags={"Payments"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Paiement trouvé"),
-     *     @OA\Response(response=403, description="Accès refusé"),
-     *     @OA\Response(response=404, description="Paiement non trouvé")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/payments/{id}',
+        summary: 'Afficher le détail d\'un paiement (Utilisateur)',
+        security: [['sanctum' => []]],
+        tags: ['Payments'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Paiement trouvé'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Paiement non trouvé')
+        ]
+    )]
+
+
     public function show(Request $request, $id)
     {
         $payment = Payment::with('order')->find($id);
@@ -78,15 +78,17 @@ class PaymentController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/admin/payments",
-     *     summary="Lister tous les paiements (Admin uniquement)",
-     *     tags={"Payments"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="Liste paginée de tous les paiements")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/admin/payments',
+        summary: 'Lister tous les paiements (Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Payments'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste paginée de tous les paiements')
+        ]
+    )]
+
+    
     public function index()
     {
         $payments = Payment::with('order.user')

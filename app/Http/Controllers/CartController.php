@@ -10,31 +10,28 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
 
 
-/**
- * @OA\Tag(
- *     name="Cart",
- *     description="Gestion du panier (Utilisateur connecté)"
- * )
- */
+#[OA\Tag(name: 'Cart', description: 'Gestion du panier (Utilisateur connecté)')]
+
+
 class CartController extends Controller
 {
-    /**
-     * Récupère ou crée le panier actif de l'utilisateur connecté
-     */
+    
     private function getOrCreateCart($userId)
     {
         return Cart::firstOrCreate(['user_id' => $userId]);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/cart",
-     *     summary="Afficher le panier de l'utilisateur connecté",
-     *     tags={"Cart"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="Panier retourné avec succès")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/cart',
+        summary: 'Afficher le panier de l\'utilisateur connecté',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        responses: [
+            new OA\Response(response: 200, description: 'Panier retourné avec succès')
+        ]
+    )]
+
+
     public function index(Request $request)
     {
         $cart = $this->getOrCreateCart($request->user()->id);
@@ -54,25 +51,29 @@ class CartController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/cart/items",
-     *     summary="Ajouter un produit au panier",
-     *     tags={"Cart"},
-     *     security={{"sanctum": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"product_id", "quantity"},
-     *             @OA\Property(property="product_id", type="integer", example=1),
-     *             @OA\Property(property="quantity", type="integer", example=2)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Produit ajouté au panier"),
-     *     @OA\Response(response=422, description="Erreur de validation"),
-     *     @OA\Response(response=400, description="Stock insuffisant")
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/cart/items',
+        summary: 'Ajouter un produit au panier',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['product_id', 'quantity'],
+                properties: [
+                    new OA\Property(property: 'product_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'quantity', type: 'integer', example: 2)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Produit ajouté au panier'),
+            new OA\Response(response: 400, description: 'Stock insuffisant'),
+            new OA\Response(response: 422, description: 'Erreur de validation')
+        ]
+    )]
+
+
     public function addItem(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -131,28 +132,31 @@ class CartController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/cart/items/{cartItemId}",
-     *     summary="Modifier la quantité d'un article du panier",
-     *     tags={"Cart"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="cartItemId", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"quantity"},
-     *             @OA\Property(property="quantity", type="integer", example=3)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Quantité modifiée"),
-     *     @OA\Response(response=404, description="Article non trouvé"),
-     *     @OA\Response(response=400, description="Stock insuffisant")
-     * )
-     */
+    #[OA\Put(
+        path: '/api/v1/cart/items/{cartItemId}',
+        summary: 'Modifier la quantité d\'un article du panier',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        parameters: [
+            new OA\Parameter(name: 'cartItemId', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['quantity'],
+                properties: [
+                    new OA\Property(property: 'quantity', type: 'integer', example: 3)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Quantité modifiée'),
+            new OA\Response(response: 404, description: 'Article non trouvé'),
+            new OA\Response(response: 400, description: 'Stock insuffisant')
+        ]
+    )]
+
+
     public function updateItem(Request $request, $cartItemId)
     {
         $validator = Validator::make($request->all(), [
@@ -194,20 +198,21 @@ class CartController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/cart/items/{cartItemId}",
-     *     summary="Supprimer un article du panier",
-     *     tags={"Cart"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="cartItemId", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Article supprimé du panier"),
-     *     @OA\Response(response=404, description="Article non trouvé")
-     * )
-     */
+    #[OA\Delete(
+        path: '/api/v1/cart/items/{cartItemId}',
+        summary: 'Supprimer un article du panier',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        parameters: [
+            new OA\Parameter(name: 'cartItemId', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Article supprimé du panier'),
+            new OA\Response(response: 404, description: 'Article non trouvé')
+        ]
+    )]
+
+
     public function removeItem(Request $request, $cartItemId)
     {
         $cart     = $this->getOrCreateCart($request->user()->id);
@@ -230,15 +235,17 @@ class CartController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/cart",
-     *     summary="Vider tout le panier",
-     *     tags={"Cart"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="Panier vidé avec succès")
-     * )
-     */
+    #[OA\Delete(
+        path: '/api/v1/cart',
+        summary: 'Vider tout le panier',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        responses: [
+            new OA\Response(response: 200, description: 'Panier vidé avec succès')
+        ]
+    )]
+
+    
     public function clear(Request $request)
     {
         $cart = $this->getOrCreateCart($request->user()->id);

@@ -8,28 +8,25 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * @OA\Tag(
- *     name="Products",
- *     description="API pour gérer les produits"
- * )
- */
+
+#[OA\Tag(name: 'Products', description: 'Gestion des produits')]
 
 class ProductController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/api/products",
-     *     summary="Lister les produits avec pagination",
-     *     tags={"Products"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="page", in="query", required=false,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Response(response=200, description="Liste paginée des produits")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/products',
+        summary: 'Lister les produits avec pagination',
+        security: [['sanctum' => []]],
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste paginée des produits')
+        ]
+    )]
+
+
     public function index()
     {
         $products = Product::with('category')
@@ -46,20 +43,21 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/products/{id}",
-     *     summary="Afficher un produit",
-     *     tags={"Products"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Produit trouvé"),
-     *     @OA\Response(response=404, description="Produit non trouvé")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/products/{id}',
+        summary: 'Afficher un produit',
+        security: [['sanctum' => []]],
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Produit trouvé'),
+            new OA\Response(response: 404, description: 'Produit non trouvé')
+        ]
+    )]
+
+
     public function show($id)
     {
         $product = Product::with('category')->find($id);
@@ -77,32 +75,36 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/products",
-     *     summary="Créer un produit (Admin)",
-     *     tags={"Products"},
-     *     security={{"sanctum": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 required={"product_category_id","name","price","stock_quantity"},
-     *                 @OA\Property(property="product_category_id", type="integer"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="description", type="string"),
-     *                 @OA\Property(property="price", type="number"),
-     *                 @OA\Property(property="stock_quantity", type="integer"),
-     *                 @OA\Property(property="image", type="string", format="binary"),
-     *                 @OA\Property(property="is_active", type="boolean")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Produit créé avec succès"),
-     *     @OA\Response(response=422, description="Erreur de validation")
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/admin/products',
+        summary: 'Créer un produit (Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Products'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['product_category_id', 'name', 'price', 'stock_quantity'],
+                    properties: [
+                        new OA\Property(property: 'product_category_id', type: 'integer'),
+                        new OA\Property(property: 'name', type: 'string'),
+                        new OA\Property(property: 'description', type: 'string'),
+                        new OA\Property(property: 'price', type: 'number'),
+                        new OA\Property(property: 'stock_quantity', type: 'integer'),
+                        new OA\Property(property: 'image', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'is_active', type: 'boolean'),
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Produit créé avec succès'),
+            new OA\Response(response: 422, description: 'Erreur de validation')
+        ]
+    )]
+
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -137,34 +139,36 @@ class ProductController extends Controller
         ], 201);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/products/{id}",
-     *     summary="Modifier un produit (Admin) - utiliser POST avec _method=PUT pour l'image",
-     *     tags={"Products"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 @OA\Property(property="_method", type="string", example="PUT"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="description", type="string"),
-     *                 @OA\Property(property="price", type="number"),
-     *                 @OA\Property(property="stock_quantity", type="integer"),
-     *                 @OA\Property(property="image", type="string", format="binary"),
-     *                 @OA\Property(property="is_active", type="boolean")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Produit modifié avec succès"),
-     *     @OA\Response(response=404, description="Produit non trouvé")
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/admin/products/{id}',
+        summary: 'Modifier un produit (Admin) - POST avec _method=PUT pour image',
+        security: [['sanctum' => []]],
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(property: '_method', type: 'string', example: 'PUT'),
+                        new OA\Property(property: 'name', type: 'string'),
+                        new OA\Property(property: 'price', type: 'number'),
+                        new OA\Property(property: 'stock_quantity', type: 'integer'),
+                        new OA\Property(property: 'image', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'is_active', type: 'boolean'),
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Produit modifié avec succès'),
+            new OA\Response(response: 404, description: 'Produit non trouvé')
+        ]
+    )]
+
+
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
@@ -212,20 +216,21 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/products/{id}",
-     *     summary="Supprimer un produit (Admin)",
-     *     tags={"Products"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Produit supprimé avec succès"),
-     *     @OA\Response(response=404, description="Produit non trouvé")
-     * )
-     */
+    #[OA\Delete(
+        path: '/api/v1/admin/products/{id}',
+        summary: 'Supprimer un produit (Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Produit supprimé avec succès'),
+            new OA\Response(response: 404, description: 'Produit non trouvé')
+        ]
+    )]
+
+    
     public function destroy($id)
     {
         $product = Product::find($id);

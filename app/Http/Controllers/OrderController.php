@@ -11,25 +11,24 @@ use App\Models\Cart;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
-/**
- * @OA\Tag(
- *     name="Orders",
- *     description="Gestion des commandes"
- * )
- */
+#[OA\Tag(name: 'Orders', description: 'Gestion des commandes')]
+
+
 class OrderController extends Controller
 {
     const DELIVERY_FEE = 2000;
 
-    /**
-     * @OA\Get(
-     *     path="/api/orders",
-     *     summary="Lister les commandes de l'utilisateur connecté",
-     *     tags={"Orders"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="Liste des commandes")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/orders',
+        summary: 'Lister les commandes de l\'utilisateur connecté',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des commandes')
+        ]
+    )]
+
+
     public function index(Request $request)
     {
         $orders = Order::with('items.product', 'payment')
@@ -43,15 +42,17 @@ class OrderController extends Controller
         ], 200);
     }
 
-    /**
- * @OA\Get(
- *     path="/api/admin/orders",
- *     summary="Lister toutes les commandes (Admin)",
- *     tags={"Orders"},
- *     security={{"sanctum": {}}},
- *     @OA\Response(response=200, description="Liste de toutes les commandes")
- * )
- */
+    #[OA\Get(
+        path: '/api/v1/admin/orders',
+        summary: 'Lister toutes les commandes (Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste de toutes les commandes')
+        ]
+    )]
+
+
 public function adminIndex()
 {
     $orders = Order::with('items.product', 'payment', 'user')
@@ -68,20 +69,21 @@ public function adminIndex()
     ], 200);
 }
 
-    /**
-     * @OA\Get(
-     *     path="/api/orders/{id}",
-     *     summary="Afficher le détail d'une commande",
-     *     tags={"Orders"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Commande trouvée"),
-     *     @OA\Response(response=404, description="Commande non trouvée")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/orders/{id}',
+        summary: 'Afficher le détail d\'une commande',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Commande trouvée'),
+            new OA\Response(response: 404, description: 'Commande non trouvée')
+        ]
+    )]
+
+
     public function show(Request $request, $id)
     {
         $order = Order::with('items.product', 'payment')
@@ -102,26 +104,30 @@ public function adminIndex()
         ], 200);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/orders/checkout",
-     *     summary="Passer une commande (simulation paiement)",
-     *     tags={"Orders"},
-     *     security={{"sanctum": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"delivery_type", "payment_method"},
-     *             @OA\Property(property="delivery_type", type="string", enum={"pickup", "delivery"}, example="delivery"),
-     *             @OA\Property(property="delivery_address", type="string", example="Dakar, Sénégal"),
-     *             @OA\Property(property="payment_method", type="string", enum={"cash", "card", "mobile_money"}, example="card")
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Commande créée avec succès"),
-     *     @OA\Response(response=400, description="Panier vide ou stock insuffisant"),
-     *     @OA\Response(response=422, description="Erreur de validation")
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/orders/checkout',
+        summary: 'Passer une commande (simulation paiement)',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['delivery_type', 'payment_method'],
+                properties: [
+                    new OA\Property(property: 'delivery_type', type: 'string', enum: ['pickup', 'delivery']),
+                    new OA\Property(property: 'delivery_address', type: 'string'),
+                    new OA\Property(property: 'payment_method', type: 'string', enum: ['cash', 'card', 'mobile_money'])
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Commande créée avec succès'),
+            new OA\Response(response: 400, description: 'Panier vide ou stock insuffisant'),
+            new OA\Response(response: 422, description: 'Erreur de validation')
+        ]
+    )]
+
+
     public function checkout(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -243,21 +249,22 @@ public function adminIndex()
         }
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/orders/{id}/cancel",
-     *     summary="Annuler une commande (Utilisateur)",
-     *     tags={"Orders"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Commande annulée"),
-     *     @OA\Response(response=400, description="Annulation impossible"),
-     *     @OA\Response(response=404, description="Commande non trouvée")
-     * )
-     */
+    #[OA\Put(
+        path: '/api/v1/orders/{id}/cancel',
+        summary: 'Annuler une commande (Utilisateur)',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Commande annulée'),
+            new OA\Response(response: 400, description: 'Annulation impossible'),
+            new OA\Response(response: 404, description: 'Commande non trouvée')
+        ]
+    )]
+
+
     public function cancel(Request $request, $id)
     {
         $order = Order::with('items.product', 'payment')
@@ -312,31 +319,30 @@ public function adminIndex()
         }
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/admin/orders/{id}/status",
-     *     summary="Modifier le statut d'une commande (Admin)",
-     *     tags={"Orders"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="id", in="path", required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"status"},
-     *             @OA\Property(
-     *                 property="status",
-     *                 type="string",
-     *                 enum={"en_attente","confirmée","en_preparation","expédiée","prete_au_retrait","livrée","récupérée","annulée"}
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Statut mis à jour"),
-     *     @OA\Response(response=404, description="Commande non trouvée")
-     * )
-     */
+    #[OA\Put(
+        path: '/api/v1/admin/orders/{id}/status',
+        summary: 'Modifier le statut d\'une commande (Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['status'],
+                properties: [
+                    new OA\Property(property: 'status', type: 'string', enum: ['en_attente', 'confirmée', 'en_preparation', 'expédiée', 'prete_au_retrait', 'livrée', 'récupérée', 'annulée'])
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Statut mis à jour'),
+            new OA\Response(response: 404, description: 'Commande non trouvée')
+        ]
+    )]
+
+    
     public function updateStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
