@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Attributes as OA;
 
 
 #[OA\Tag(name: 'Products', description: 'Gestion des produits')]

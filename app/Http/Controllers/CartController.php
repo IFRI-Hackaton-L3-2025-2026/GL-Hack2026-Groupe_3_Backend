@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 
 #[OA\Tag(name: 'Cart', description: 'Gestion du panier (Utilisateur connecté)')]

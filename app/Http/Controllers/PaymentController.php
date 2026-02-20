@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Payments', description: 'Consultation des paiements')]
 
