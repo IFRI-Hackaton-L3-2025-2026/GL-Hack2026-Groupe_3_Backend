@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Orders', description: 'Gestion des commandes')]
 

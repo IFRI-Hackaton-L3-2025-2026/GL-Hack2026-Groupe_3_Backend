@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Product Categories', description: 'Gestion des catégories de produits (Admin uniquement)')]
 

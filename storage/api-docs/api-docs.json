@@ -1,0 +1,905 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "BMI API",
+        "description": "Documentation de l'API BMI — Module Equipements & E-commerce",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Serveur local"
+        }
+    ],
+    "paths": {
+        "/api/v1/cart": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Afficher le panier de l'utilisateur connecté",
+                "operationId": "2721c2a7f5993ff11ef640d1ca9a2c7c",
+                "responses": {
+                    "200": {
+                        "description": "Panier retourné avec succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Vider tout le panier",
+                "operationId": "6fb158682b5cd7446fa485ffa0de60c7",
+                "responses": {
+                    "200": {
+                        "description": "Panier vidé avec succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cart/items": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Ajouter un produit au panier",
+                "operationId": "c16629a212180f36fb1c85298ec00d69",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Produit ajouté au panier"
+                    },
+                    "400": {
+                        "description": "Stock insuffisant"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cart/items/{cartItemId}": {
+            "put": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Modifier la quantité d'un article du panier",
+                "operationId": "ffc5bb205658709f6b392fc7271d6206",
+                "parameters": [
+                    {
+                        "name": "cartItemId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Quantité modifiée"
+                    },
+                    "404": {
+                        "description": "Article non trouvé"
+                    },
+                    "400": {
+                        "description": "Stock insuffisant"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Supprimer un article du panier",
+                "operationId": "f416c58d581621bc79814764c19c76f5",
+                "parameters": [
+                    {
+                        "name": "cartItemId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Article supprimé du panier"
+                    },
+                    "404": {
+                        "description": "Article non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Lister les commandes de l'utilisateur connecté",
+                "operationId": "2fd056a400bd274a5b2278e92a8ed010",
+                "responses": {
+                    "200": {
+                        "description": "Liste des commandes"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Lister toutes les commandes (Admin)",
+                "operationId": "ef8a4f1dea148feb6b901494a61d08c1",
+                "responses": {
+                    "200": {
+                        "description": "Liste de toutes les commandes"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Afficher le détail d'une commande",
+                "operationId": "d9752171673795b587d678236ac33a2a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Commande trouvée"
+                    },
+                    "404": {
+                        "description": "Commande non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/checkout": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Passer une commande (simulation paiement)",
+                "operationId": "e20deff925375d32a2cdd385c75fc65e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "delivery_type",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "delivery_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pickup",
+                                            "delivery"
+                                        ]
+                                    },
+                                    "delivery_address": {
+                                        "type": "string"
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "cash",
+                                            "card",
+                                            "mobile_money"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Commande créée avec succès"
+                    },
+                    "400": {
+                        "description": "Panier vide ou stock insuffisant"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/orders/{id}/cancel": {
+            "put": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Annuler une commande (Utilisateur)",
+                "operationId": "24bdcd53c56d333f47208db5384f4b37",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Commande annulée"
+                    },
+                    "400": {
+                        "description": "Annulation impossible"
+                    },
+                    "404": {
+                        "description": "Commande non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/orders/{id}/status": {
+            "put": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Modifier le statut d'une commande (Admin)",
+                "operationId": "183177ba22ebcf6aa23db298dfb97494",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "en_attente",
+                                            "confirmée",
+                                            "en_preparation",
+                                            "expédiée",
+                                            "prete_au_retrait",
+                                            "livrée",
+                                            "récupérée",
+                                            "annulée"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Statut mis à jour"
+                    },
+                    "404": {
+                        "description": "Commande non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payments": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Lister les paiements de l'utilisateur connecté",
+                "operationId": "93f6288713730137cdd2ac3978ca1b25",
+                "responses": {
+                    "200": {
+                        "description": "Liste des paiements de l'utilisateur"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payments/{id}": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Afficher le détail d'un paiement (Utilisateur)",
+                "operationId": "2fab8e82d0187d3c11bda5975c6fbbd5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paiement trouvé"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Paiement non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/payments": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Lister tous les paiements (Admin)",
+                "operationId": "43f90a5db11d661f94914bfbf38375be",
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée de tous les paiements"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/product-categories": {
+            "get": {
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Lister toutes les catégories",
+                "operationId": "f2a921cf2ce0374eb5daa828a2457c58",
+                "responses": {
+                    "200": {
+                        "description": "Liste des catégories retournée avec succès"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/product-categories/{id}": {
+            "get": {
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Afficher une catégorie",
+                "operationId": "4c2606f83cba3af968178b75e8d53927",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Catégorie trouvée"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/product-categories": {
+            "post": {
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Créer une catégorie (Admin)",
+                "operationId": "3bc91572770020843e640a94c73d7053",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Pièces moteur"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Toutes les pièces moteur"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Catégorie créée avec succès"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/product-categories/{id}": {
+            "put": {
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Modifier une catégorie (Admin)",
+                "operationId": "dbc343547e42fc8d26494445a4682b79",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Catégorie modifiée avec succès"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Supprimer une catégorie (Admin)",
+                "operationId": "99dace532ea1e6c3d1309499d2dc812c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Catégorie supprimée avec succès"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Lister les produits avec pagination",
+                "operationId": "7ca3593d05653d957ae7be1ac648ca44",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée des produits"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Afficher un produit",
+                "operationId": "1948ab0c6b14a722ad6d1665cd38e1f1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produit trouvé"
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/products": {
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Créer un produit (Admin)",
+                "operationId": "e1305be46a3693e56106d776f51c8b07",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "product_category_id",
+                                    "name",
+                                    "price",
+                                    "stock_quantity"
+                                ],
+                                "properties": {
+                                    "product_category_id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number"
+                                    },
+                                    "stock_quantity": {
+                                        "type": "integer"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Produit créé avec succès"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/products/{id}": {
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Modifier un produit (Admin) - POST avec _method=PUT pour image",
+                "operationId": "99d0984ba6db0097e7d8ca3fcb5af1bf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "_method": {
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number"
+                                    },
+                                    "stock_quantity": {
+                                        "type": "integer"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Produit modifié avec succès"
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Supprimer un produit (Admin)",
+                "operationId": "80c0772847bb7843772fe9504bd82935",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produit supprimé avec succès"
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Cart",
+            "description": "Gestion du panier (Utilisateur connecté)"
+        },
+        {
+            "name": "Orders",
+            "description": "Gestion des commandes"
+        },
+        {
+            "name": "Payments",
+            "description": "Consultation des paiements"
+        },
+        {
+            "name": "Product Categories",
+            "description": "Gestion des catégories de produits (Admin uniquement)"
+        },
+        {
+            "name": "Products",
+            "description": "Gestion des produits"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Enter token in format (Bearer <token>)"
+            }
+        }
+    }
+}
