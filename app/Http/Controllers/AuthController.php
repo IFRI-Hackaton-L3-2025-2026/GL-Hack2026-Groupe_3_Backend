@@ -134,7 +134,7 @@ class AuthController extends Controller
         path: '/api/v1/admin/users',
         summary: 'Créer un compte personnel',
         description: 'Création d\'un technicien ou gestionnaire par l\'admin uniquement',
-        security: [['bearerAuth' => []]],
+        security: [['sanctum' => []]],
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -193,7 +193,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/api/v1/logout',
         summary: 'Déconnexion',
-        security: [['bearerAuth' => []]],
+        security: [['sanctum' => []]],
         tags: ['Authentification'],
         responses: [
             new OA\Response(response: 200, description: 'Déconnexion réussie'),
@@ -213,7 +213,7 @@ class AuthController extends Controller
     #[OA\Get(
         path: '/api/v1/me',
         summary: 'Profil utilisateur connecté',
-        security: [['bearerAuth' => []]],
+        security: [['sanctum' => []]],
         tags: ['Authentification'],
         responses: [
             new OA\Response(response: 200, description: 'Profil retourné avec succès'),
