@@ -18,7 +18,7 @@
                     "Authentification"
                 ],
                 "summary": "Connexion utilisateur",
-                "description": "Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes.",
+                "description": "Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes (ADMIN, GESTIONNAIRE, TECNNICIEN, CLIENTS).",
                 "operationId": "da2ca4d7a5cdec77b8b45a20373535cb",
                 "requestBody": {
                     "required": true,
@@ -336,6 +336,10 @@
                                                 "type": "string",
                                                 "example": "en_cours"
                                             },
+                                            "priority": {
+                                                "type": "string",
+                                                "example": "critique"
+                                            },
                                             "equipment": {
                                                 "properties": {
                                                     "name": {
@@ -360,9 +364,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Session expirée ou jeton manquant"
                     }
                 },
                 "security": [
@@ -376,7 +377,7 @@
                     "Pannes"
                 ],
                 "summary": "Signaler une nouvelle panne",
-                "description": "Crée un ticket de panne. Note : Seuls les techniciens et admins ont les droits complets sur cette action.",
+                "description": "Crée un ticket de panne. Seuls les techniciens et admins peuvent signaler.",
                 "operationId": "6a7137937fda4a35f5c17251818e47b8",
                 "requestBody": {
                     "required": true,
@@ -385,7 +386,6 @@
                             "schema": {
                                 "required": [
                                     "equipment_id",
-                                    "user_id",
                                     "description",
                                     "priority",
                                     "reported_at"
@@ -395,11 +395,6 @@
                                         "description": "ID de l'équipement en panne",
                                         "type": "integer",
                                         "example": 1
-                                    },
-                                    "user_id": {
-                                        "description": "ID de l'utilisateur déclarant (technicien ou client)",
-                                        "type": "integer",
-                                        "example": 2
                                     },
                                     "description": {
                                         "type": "string",
@@ -414,25 +409,10 @@
                                         ],
                                         "example": "moyenne"
                                     },
-                                    "status": {
-                                        "type": "string",
-                                        "enum": [
-                                            "ouverte",
-                                            "en_cours",
-                                            "resolue"
-                                        ],
-                                        "example": "ouverte"
-                                    },
                                     "reported_at": {
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2026-02-19 10:00:00"
-                                    },
-                                    "resolved_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": null,
-                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -463,14 +443,14 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Consulter une panne spécifique",
+                "summary": "Consulter une panne",
                 "description": "Retourne toutes les informations d'une panne via son identifiant unique.",
                 "operationId": "e834c281bd360d02ef6b59bf7e186b22",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID unique de la panne",
+                        "description": "ID de la panne",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -483,7 +463,7 @@
                         "description": "Détails de la panne récupérés"
                     },
                     "404": {
-                        "description": "Panne non trouvée dans la base de données"
+                        "description": "Panne non trouvée"
                     }
                 },
                 "security": [
@@ -497,12 +477,13 @@
                     "Pannes"
                 ],
                 "summary": "Mettre à jour une panne",
-                "description": "Permet de modifier les informations ou de marquer la panne comme résolue.",
+                "description": "Modifie le statut, la priorité ou la description d’une panne.",
                 "operationId": "ba3b7e35cbf081591f482f0d6de9a6b5",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la panne",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -511,6 +492,7 @@
                     }
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -521,14 +503,22 @@
                                             "ouverte",
                                             "en_cours",
                                             "resolue"
-                                        ],
-                                        "example": "resolue"
+                                        ]
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "faible",
+                                            "moyenne",
+                                            "critique"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": "string"
                                     },
                                     "resolved_at": {
-                                        "description": "Date de fin d'intervention",
                                         "type": "string",
-                                        "format": "date-time",
-                                        "example": "2026-02-20 15:00:00"
+                                        "format": "date-time"
                                     }
                                 },
                                 "type": "object"
@@ -540,11 +530,8 @@
                     "200": {
                         "description": "Panne mise à jour avec succès"
                     },
-                    "403": {
-                        "description": "Accès refusé"
-                    },
                     "404": {
-                        "description": "Panne introuvable"
+                        "description": "Panne non trouvée"
                     }
                 },
                 "security": [
@@ -557,13 +544,14 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Supprimer un ticket de panne",
+                "summary": "Supprimer une panne",
                 "description": "Supprime définitivement une panne du système.",
                 "operationId": "dff0c4e9d7058657741bbaaf35c7b908",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la panne à supprimer",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -574,9 +562,6 @@
                 "responses": {
                     "200": {
                         "description": "Panne supprimée avec succès"
-                    },
-                    "403": {
-                        "description": "Droits administrateur requis"
                     },
                     "404": {
                         "description": "Le ticket n'existe plus"

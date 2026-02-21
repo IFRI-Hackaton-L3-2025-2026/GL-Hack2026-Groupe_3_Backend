@@ -11,7 +11,7 @@ class BreakdownController extends Controller
 {
     /**
      * Liste toutes les pannes enregistrées
-     * * Récupère l'historique complet des pannes avec les détails de l'équipement et l'auteur du signalement.
+     * Récupère l'historique complet des pannes avec les détails de l'équipement et l'auteur du signalement.
      */
     #[OA\Get(
         path: '/api/v1/breakdowns',
@@ -21,7 +21,7 @@ class BreakdownController extends Controller
         tags: ['Pannes'],
         responses: [
             new OA\Response(
-                response: 200, 
+                response: 200,
                 description: 'Liste des pannes récupérée avec succès',
                 content: new OA\JsonContent(
                     type: 'array',
@@ -30,6 +30,7 @@ class BreakdownController extends Controller
                             new OA\Property(property: 'id', type: 'integer', example: 1),
                             new OA\Property(property: 'description', type: 'string', example: 'Moteur en surchauffe'),
                             new OA\Property(property: 'status', type: 'string', example: 'en_cours'),
+                            new OA\Property(property: 'priority', type: 'string', example: 'critique'),
                             new OA\Property(property: 'equipment', type: 'object', properties: [
                                 new OA\Property(property: 'name', type: 'string', example: 'Générateur A1')
                             ]),
@@ -39,8 +40,7 @@ class BreakdownController extends Controller
                         ]
                     )
                 )
-            ),
-            new OA\Response(response: 401, description: 'Session expirée ou jeton manquant')
+            )
         ]
     )]
     public function index()
@@ -51,27 +51,23 @@ class BreakdownController extends Controller
 
     /**
      * Signaler une nouvelle panne
-     * * Permet d'enregistrer un incident technique. 
-     * Le statut par défaut est "ouverte". La priorité "critique" déclenche généralement une alerte immédiate.
+     * Permet d'enregistrer un incident technique. Le statut par défaut est "ouverte".
      */
     #[OA\Post(
         path: '/api/v1/breakdowns',
         summary: 'Signaler une nouvelle panne',
-        description: 'Crée un ticket de panne. Note : Seuls les techniciens et admins ont les droits complets sur cette action.',
+        description: 'Crée un ticket de panne. Seuls les techniciens et admins peuvent signaler.',
         security: [['sanctum' => []]],
         tags: ['Pannes'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['equipment_id', 'user_id', 'description', 'priority', 'reported_at'],
+                required: ['equipment_id', 'description', 'priority', 'reported_at'],
                 properties: [
-                    new OA\Property(property: 'equipment_id', type: 'integer', example: 1, description: 'ID de l\'équipement en panne'),
-                    new OA\Property(property: 'user_id', type: 'integer', example: 2, description: 'ID de l\'utilisateur déclarant (technicien ou client)'),
+                    new OA\Property(property: 'equipment_id', type: 'integer', example: 1, description: "ID de l'équipement en panne"),
                     new OA\Property(property: 'description', type: 'string', example: 'Vibrations anormales au démarrage'),
-                    new OA\Property(property: 'priority', type: 'string', enum: ['faible', 'moyenne', 'critique'], example: 'moyenne'),
-                    new OA\Property(property: 'status', type: 'string', enum: ['ouverte', 'en_cours', 'resolue'], example: 'ouverte'),
-                    new OA\Property(property: 'reported_at', type: 'string', format: 'date-time', example: '2026-02-19 10:00:00'),
-                    new OA\Property(property: 'resolved_at', type: 'string', format: 'date-time', nullable: true, example: null)
+                    new OA\Property(property: 'priority', type: 'string', enum: ['faible','moyenne','critique'], example: 'moyenne'),
+                    new OA\Property(property: 'reported_at', type: 'string', format: 'date-time', example: '2026-02-19 10:00:00')
                 ]
             )
         ),
@@ -83,16 +79,22 @@ class BreakdownController extends Controller
     )]
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'equipment_id' => 'required|exists:equipments,id',
-            'user_id'      => 'required|exists:users,id',
             'description'  => 'required|string',
             'priority'     => 'required|in:faible,moyenne,critique',
-            'status'       => 'nullable|in:ouverte,en_cours,resolue',
             'reported_at'  => 'required|date',
-            'resolved_at'  => 'nullable|date|after:reported_at',
         ]);
-        $breakdown = Breakdown::create($request->all());
+
+        $breakdown = Breakdown::create([
+            'equipment_id' => $validated['equipment_id'],
+            'user_id'      => $request->user()->id, // user connecté automatiquement
+            'description'  => $validated['description'],
+            'priority'     => $validated['priority'],
+            'status'       => 'ouverte', // statut initial
+            'reported_at'  => $validated['reported_at'],
+        ]);
+
         return response()->json([
             'message'   => 'Panne signalée avec succès',
             'breakdown' => $breakdown->load(['equipment', 'declaredBy'])
@@ -100,80 +102,97 @@ class BreakdownController extends Controller
     }
 
     /**
-     * Détails d'un incident spécifique
+     * Détails d'une panne spécifique
      */
     #[OA\Get(
         path: '/api/v1/breakdowns/{id}',
-        summary: 'Consulter une panne spécifique',
+        summary: 'Consulter une panne',
         description: 'Retourne toutes les informations d\'une panne via son identifiant unique.',
         security: [['sanctum' => []]],
         tags: ['Pannes'],
         parameters: [
             new OA\Parameter(
-                name: 'id', 
-                in: 'path', 
-                description: 'ID unique de la panne',
+                name: 'id',
+                in: 'path',
                 required: true,
+                description: 'ID de la panne',
                 schema: new OA\Schema(type: 'integer', example: 1)
             )
         ],
         responses: [
             new OA\Response(response: 200, description: 'Détails de la panne récupérés'),
-            new OA\Response(response: 404, description: 'Panne non trouvée dans la base de données')
+            new OA\Response(response: 404, description: 'Panne non trouvée')
         ]
     )]
     public function show($id)
     {
         $breakdown = Breakdown::with(['equipment', 'declaredBy'])->find($id);
+
         if (!$breakdown) {
             return response()->json(['message' => 'Panne non trouvée'], 404);
         }
+
         return response()->json($breakdown, 200);
     }
 
     /**
-     * Mise à jour de la panne (Statut et Résolution)
-     * * Utilisé principalement pour changer l'état (ex: passer de "ouverte" à "en_cours") ou clore le ticket.
+     * Mise à jour de la panne
+     * Utilisé pour changer le statut, la priorité ou la description.
+     * Technicien ou Admin via middleware.
      */
     #[OA\Put(
         path: '/api/v1/breakdowns/{id}',
         summary: 'Mettre à jour une panne',
-        description: 'Permet de modifier les informations ou de marquer la panne comme résolue.',
+        description: 'Modifie le statut, la priorité ou la description d’une panne.',
         security: [['sanctum' => []]],
         tags: ['Pannes'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                description: 'ID de la panne',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
         ],
         requestBody: new OA\RequestBody(
+            required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'status', type: 'string', enum: ['ouverte', 'en_cours', 'resolue'], example: 'resolue'),
-                    new OA\Property(property: 'resolved_at', type: 'string', format: 'date-time', example: '2026-02-20 15:00:00', description: 'Date de fin d\'intervention')
+                    new OA\Property(property: 'status', type: 'string', enum: ['ouverte','en_cours','resolue']),
+                    new OA\Property(property: 'priority', type: 'string', enum: ['faible','moyenne','critique']),
+                    new OA\Property(property: 'description', type: 'string'),
+                    new OA\Property(property: 'resolved_at', type: 'string', format: 'date-time')
                 ]
             )
         ),
         responses: [
             new OA\Response(response: 200, description: 'Panne mise à jour avec succès'),
-            new OA\Response(response: 403, description: 'Accès refusé'),
-            new OA\Response(response: 404, description: 'Panne introuvable')
+            new OA\Response(response: 404, description: 'Panne non trouvée')
         ]
     )]
     public function update(Request $request, $id)
     {
         $breakdown = Breakdown::find($id);
+
         if (!$breakdown) {
             return response()->json(['message' => 'Panne non trouvée'], 404);
         }
-        $request->validate([
-            'equipment_id' => 'nullable|exists:equipments,id',
-            'user_id'      => 'nullable|exists:users,id',
-            'description'  => 'nullable|string',
-            'priority'     => 'nullable|in:faible,moyenne,critique',
-            'status'       => 'nullable|in:ouverte,en_cours,resolue',
-            'reported_at'  => 'nullable|date',
-            'resolved_at'  => 'nullable|date|after:reported_at',
+
+        $validated = $request->validate([
+            'status'      => 'nullable|in:ouverte,en_cours,resolue',
+            'priority'    => 'nullable|in:faible,moyenne,critique',
+            'description' => 'nullable|string',
+            'resolved_at' => 'nullable|date',
         ]);
-        $breakdown->update($request->all());
+
+        // Si on passe à résolue et pas de date fournie → on met maintenant
+        if (isset($validated['status']) && $validated['status'] === 'resolue' && empty($validated['resolved_at'])) {
+            $validated['resolved_at'] = now();
+        }
+
+        $breakdown->update($validated);
+
         return response()->json([
             'message'   => 'Panne modifiée avec succès',
             'breakdown' => $breakdown->load(['equipment', 'declaredBy'])
@@ -181,31 +200,40 @@ class BreakdownController extends Controller
     }
 
     /**
-     * Suppression d'un ticket
-     * * Action irréversible. Généralement limitée aux administrateurs.
+     * Supprimer une panne (Admin uniquement)
      */
     #[OA\Delete(
         path: '/api/v1/breakdowns/{id}',
-        summary: 'Supprimer un ticket de panne',
+        summary: 'Supprimer une panne',
         description: 'Supprime définitivement une panne du système.',
         security: [['sanctum' => []]],
         tags: ['Pannes'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                description: 'ID de la panne à supprimer',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
         ],
         responses: [
             new OA\Response(response: 200, description: 'Panne supprimée avec succès'),
-            new OA\Response(response: 403, description: 'Droits administrateur requis'),
             new OA\Response(response: 404, description: 'Le ticket n\'existe plus')
         ]
     )]
     public function destroy($id)
     {
         $breakdown = Breakdown::find($id);
+
         if (!$breakdown) {
             return response()->json(['message' => 'Panne non trouvée'], 404);
         }
+
         $breakdown->delete();
-        return response()->json(['message' => 'Panne supprimée avec succès'], 200);
+
+        return response()->json([
+            'message' => 'Panne supprimée avec succès'
+        ], 200);
     }
 }
