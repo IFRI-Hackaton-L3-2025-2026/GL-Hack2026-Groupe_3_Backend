@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
             EquipmentSeeder::class,
             MaintenanceSeeder::class,
             BreakdownSeeder::class,
+            ClientSeeder::class,
+            ProductCategorySeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
