@@ -12,7 +12,7 @@ class EquipmentCategorySeeder extends Seeder
         $categories = ['Robot', 'CNC', 'Presse', 'Convoyeur'];
 
         foreach ($categories as $category) {
-            EquipmentCategory::create(['name' => $category]);
+            EquipmentCategory::updateOrCreate(['name' => $category]);
         }
     }
 }

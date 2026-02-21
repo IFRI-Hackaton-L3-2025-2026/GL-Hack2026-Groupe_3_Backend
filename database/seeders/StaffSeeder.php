@@ -14,14 +14,14 @@ class StaffSeeder extends Seeder
         $technicienRole   = Role::where('name', 'technicien')->first();
         $gestionnaireRole = Role::where('name', 'gestionnaire')->first();
 
-        User::create([
+        User::updateOrCreate([
             'fullname' => 'Jean Technicien',
             'email'    => 'jean@bmi.bj',
             'password' => Hash::make('password123'),
             'role_id'  => $technicienRole->id,
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'fullname' => 'Marie Gestionnaire',
             'email'    => 'marie@bmi.bj',
             'password' => Hash::make('password123'),

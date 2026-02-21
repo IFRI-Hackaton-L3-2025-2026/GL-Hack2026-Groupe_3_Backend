@@ -13,7 +13,7 @@ class AdminSeeder extends Seeder
     {
         $adminRole = Role::where('name', 'admin')->first();
 
-        User::create([
+        User::updateOrCreate([
             'fullname' => 'Super Admin BMI',
             'email'    => 'admin@bmi.bj',
             'password' => Hash::make('password_secret'),

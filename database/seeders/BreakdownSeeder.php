@@ -40,7 +40,7 @@ class BreakdownSeeder extends Seeder
         ];
 
         foreach ($breakdowns as $breakdown) {
-            Breakdown::create($breakdown);
+            Breakdown::updateOrCreate($breakdown);
         }
     }
 }

@@ -77,7 +77,7 @@ class EquipmentSeeder extends Seeder
         ];
 
         foreach ($equipments as $equipment) {
-            Equipment::create($equipment);
+            Equipment::updateOrCreate($equipment);
         }
     }
 }

@@ -45,7 +45,7 @@ class ClientSeeder extends Seeder
         ];
 
         foreach ($clients as $client) {
-            User::create($client);
+            User::updateOrCreate($client);
         }
     }
 }

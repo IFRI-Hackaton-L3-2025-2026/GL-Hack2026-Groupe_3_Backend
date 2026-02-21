@@ -43,7 +43,7 @@ class MaintenanceSeeder extends Seeder
         ];
 
         foreach ($maintenances as $maintenance) {
-            Maintenance::create($maintenance);
+            Maintenance::updateOrCreate($maintenance);
         }
     }
 }
