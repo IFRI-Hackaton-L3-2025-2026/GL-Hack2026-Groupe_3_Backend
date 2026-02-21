@@ -1,17 +1,458 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "BMI API",
-        "description": "Documentation de l'API BMI — Module Equipements & E-commerce",
+        "title": "AI4BMI API",
+        "description": "API REST pour la plateforme AI4BMI — Gestion équipements et E-commerce BMI",
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
+            "url": "http://127.0.0.1:8000",
             "description": "Serveur local"
         }
     ],
     "paths": {
+        "/api/v1/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion utilisateur",
+                "description": "Connexion pour le personnel BMI et les clients",
+                "operationId": "da2ca4d7a5cdec77b8b45a20373535cb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@bmi.bj"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password_secret"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie"
+                    },
+                    "401": {
+                        "description": "Email ou mot de passe incorrect"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                }
+            }
+        },
+        "/api/v1/register": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Inscription client",
+                "description": "Inscription réservée aux clients via Flutter. Le rôle client est forcé côté serveur.",
+                "operationId": "6796c44e1f6079c411abbfed066c5907",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fullname",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "fullname": {
+                                        "type": "string",
+                                        "example": "Client Test"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "client@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "97000000"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Cotonou, Bénin"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Inscription réussie"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/users": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Créer un compte personnel",
+                "description": "Création d'un technicien ou gestionnaire par l'admin uniquement",
+                "operationId": "6ab0e37ebd7fec25d941864469045645",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fullname",
+                                    "email",
+                                    "password",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "fullname": {
+                                        "type": "string",
+                                        "example": "Jean Technicien"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "jean@bmi.bj"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "97000000"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "technicien",
+                                            "gestionnaire"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion",
+                "operationId": "c4eddaf1a2e990cc90e4326c0d731d41",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/me": {
+            "get": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Profil utilisateur connecté",
+                "operationId": "ae2f8c1ae1f9c5aee99c01f5d13da30b",
+                "responses": {
+                    "200": {
+                        "description": "Profil retourné avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/breakdowns": {
+            "get": {
+                "tags": [
+                    "Pannes"
+                ],
+                "summary": "Liste toutes les pannes",
+                "operationId": "64d529e4d2650d4e1bc2c7d1070461f4",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pannes"
+                ],
+                "summary": "Signaler une panne",
+                "operationId": "6a7137937fda4a35f5c17251818e47b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "equipment_id",
+                                    "user_id",
+                                    "description",
+                                    "priority",
+                                    "reported_at"
+                                ],
+                                "properties": {
+                                    "equipment_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Vibrations anormales"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "faible",
+                                            "moyenne",
+                                            "critique"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ouverte",
+                                            "en_cours",
+                                            "resolue"
+                                        ]
+                                    },
+                                    "reported_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-19 10:00:00"
+                                    },
+                                    "resolved_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": null
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Panne signalée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin ou technicien uniquement"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/breakdowns/{id}": {
+            "get": {
+                "tags": [
+                    "Pannes"
+                ],
+                "summary": "Détail d'une panne",
+                "operationId": "e834c281bd360d02ef6b59bf7e186b22",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Panne retournée avec succès"
+                    },
+                    "404": {
+                        "description": "Panne non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pannes"
+                ],
+                "summary": "Modifier une panne",
+                "operationId": "ba3b7e35cbf081591f482f0d6de9a6b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ouverte",
+                                            "en_cours",
+                                            "resolue"
+                                        ]
+                                    },
+                                    "resolved_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-20 15:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Panne modifiée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Panne non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pannes"
+                ],
+                "summary": "Supprimer une panne",
+                "operationId": "dff0c4e9d7058657741bbaaf35c7b908",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Panne supprimée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "404": {
+                        "description": "Panne non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/cart": {
             "get": {
                 "tags": [
@@ -172,6 +613,709 @@
                     },
                     "404": {
                         "description": "Article non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Statistiques globales du tableau de bord",
+                "description": "Retourne les compteurs équipements, maintenances, pannes, pannes récentes et maintenances à venir",
+                "operationId": "7fcdda8cd2abe01844870b386b1c9058",
+                "responses": {
+                    "200": {
+                        "description": "Statistiques retournées avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/equipment-categories": {
+            "get": {
+                "tags": [
+                    "Catégories Équipements"
+                ],
+                "summary": "Liste toutes les catégories d'équipements",
+                "operationId": "a5ba651c97b03393bb9ff4dc7936dd48",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Catégories Équipements"
+                ],
+                "summary": "Créer une catégorie d'équipement",
+                "operationId": "c7aa62c73a4c41bc4f7b78356fc8c747",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Robot"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Catégorie créée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/equipment-categories/{id}": {
+            "get": {
+                "tags": [
+                    "Catégories Équipements"
+                ],
+                "summary": "Détail d'une catégorie avec ses équipements",
+                "operationId": "6c4bd1e233a0bbaa2766b867288fd064",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Catégorie retournée avec succès"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Catégories Équipements"
+                ],
+                "summary": "Modifier une catégorie d'équipement",
+                "operationId": "53f9d3f94df32c29781613adc003984a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Robot Industriel"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Catégorie modifiée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Catégories Équipements"
+                ],
+                "summary": "Supprimer une catégorie d'équipement",
+                "operationId": "3ea05e39f4ad3c003ca0268e64732133",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Catégorie supprimée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "404": {
+                        "description": "Catégorie non trouvée"
+                    },
+                    "409": {
+                        "description": "Impossible de supprimer — équipements liés"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/equipments": {
+            "get": {
+                "tags": [
+                    "Équipements"
+                ],
+                "summary": "Liste tous les équipements",
+                "operationId": "02b66b3bfecb572db7a59f3ab0857e03",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Équipements"
+                ],
+                "summary": "Créer un équipement",
+                "operationId": "97a2ab8c0d93114c8bef39babf18b858",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "equipment_category_id",
+                                    "name",
+                                    "serial_number"
+                                ],
+                                "properties": {
+                                    "equipment_category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Robot KUKA KR 210"
+                                    },
+                                    "brand": {
+                                        "type": "string",
+                                        "example": "KUKA"
+                                    },
+                                    "serial_number": {
+                                        "type": "string",
+                                        "example": "KUKA-003"
+                                    },
+                                    "installation_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "actif",
+                                            "en_panne",
+                                            "en_maintenance",
+                                            "hors_service"
+                                        ]
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Zone A"
+                                    },
+                                    "picture": {
+                                        "type": "string",
+                                        "example": "equipments/robot.jpg"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Bras articulé pour soudure"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Équipement créé avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/equipments/{id}": {
+            "get": {
+                "tags": [
+                    "Équipements"
+                ],
+                "summary": "Détail d'un équipement avec ses maintenances et pannes",
+                "operationId": "cf0b73415e1adbd817e7be46175c1514",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Équipement retourné avec succès"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Équipements"
+                ],
+                "summary": "Modifier un équipement",
+                "operationId": "2141a6f4eb5cf6d0702947ffec3826e7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "equipment_category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Robot KUKA KR 210"
+                                    },
+                                    "brand": {
+                                        "type": "string",
+                                        "example": "KUKA"
+                                    },
+                                    "serial_number": {
+                                        "type": "string",
+                                        "example": "KUKA-003"
+                                    },
+                                    "installation_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-15"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "actif",
+                                            "en_panne",
+                                            "en_maintenance",
+                                            "hors_service"
+                                        ]
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Zone B"
+                                    },
+                                    "picture": {
+                                        "type": "string",
+                                        "example": "equipments/robot.jpg"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Bras articulé mis à jour"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Équipement modifié avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Équipements"
+                ],
+                "summary": "Supprimer un équipement",
+                "operationId": "1f395b34fedb037e112a2a1a0a32bbae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Équipement supprimé avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "404": {
+                        "description": "Équipement non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/maintenances": {
+            "get": {
+                "tags": [
+                    "Maintenances"
+                ],
+                "summary": "Liste toutes les maintenances",
+                "operationId": "d00b5b05f925da272e1ed39dde708b2f",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée avec succès"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Maintenances"
+                ],
+                "summary": "Planifier une maintenance",
+                "operationId": "1d30017f20e239a67738f6922026cdd6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "equipment_id",
+                                    "user_id",
+                                    "type",
+                                    "start_date"
+                                ],
+                                "properties": {
+                                    "equipment_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "preventive",
+                                            "corrective"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "planifiee",
+                                            "en_cours",
+                                            "terminee",
+                                            "annulee"
+                                        ]
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-25 08:00:00"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-25 17:00:00"
+                                    },
+                                    "cost": {
+                                        "type": "number",
+                                        "example": 50000
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Maintenance préventive trimestrielle"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Maintenance créée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Données invalides"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/maintenances/{id}": {
+            "get": {
+                "tags": [
+                    "Maintenances"
+                ],
+                "summary": "Détail d'une maintenance",
+                "operationId": "f2df26fffcbb00938810c316e9c20279",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance retournée avec succès"
+                    },
+                    "404": {
+                        "description": "Maintenance non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Maintenances"
+                ],
+                "summary": "Modifier une maintenance",
+                "operationId": "5c45fc3734c4706751a87c8af9ee4b04",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "planifiee",
+                                            "en_cours",
+                                            "terminee",
+                                            "annulee"
+                                        ]
+                                    },
+                                    "cost": {
+                                        "type": "number",
+                                        "example": 75000
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-02-25 17:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Maintenance modifiée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Maintenance non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Maintenances"
+                ],
+                "summary": "Supprimer une maintenance",
+                "operationId": "be6133f73ccc7290cfe737f4090914ae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance supprimée avec succès"
+                    },
+                    "403": {
+                        "description": "Accès refusé — admin uniquement"
+                    },
+                    "404": {
+                        "description": "Maintenance non trouvée"
                     }
                 },
                 "security": [
@@ -870,10 +2014,40 @@
             }
         }
     },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Enter token in format (Bearer <token>)"
+            }
+        }
+    },
     "tags": [
+        {
+            "name": "Pannes",
+            "description": "Gestion des pannes des équipements"
+        },
         {
             "name": "Cart",
             "description": "Gestion du panier (Utilisateur connecté)"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Statistiques globales du tableau de bord"
+        },
+        {
+            "name": "Catégories Équipements",
+            "description": "Gestion des catégories d'équipements"
+        },
+        {
+            "name": "Équipements",
+            "description": "Gestion des équipements industriels"
+        },
+        {
+            "name": "Maintenances",
+            "description": "Gestion des maintenances des équipements"
         },
         {
             "name": "Orders",
@@ -890,16 +2064,10 @@
         {
             "name": "Products",
             "description": "Gestion des produits"
+        },
+        {
+            "name": "Authentification",
+            "description": "Authentification"
         }
-    ],
-    "components": {
-        "securitySchemes": {
-            "sanctum": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "Enter token in format (Bearer <token>)"
-            }
-        }
-    }
+    ]
 }

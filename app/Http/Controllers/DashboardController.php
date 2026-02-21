@@ -6,9 +6,22 @@ use Illuminate\Http\Request;
 use App\Models\Equipment;
 use App\Models\Maintenance;
 use App\Models\Breakdown;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Dashboard', description: 'Statistiques globales du tableau de bord')]
 class DashboardController extends Controller
 {
+    #[OA\Get(
+        path: '/api/v1/dashboard',
+        summary: 'Statistiques globales du tableau de bord',
+        description: 'Retourne les compteurs équipements, maintenances, pannes, pannes récentes et maintenances à venir',
+        security: [['sanctum' => []]],
+        tags: ['Dashboard'],
+        responses: [
+            new OA\Response(response: 200, description: 'Statistiques retournées avec succès'),
+            new OA\Response(response: 401, description: 'Non authentifié')
+        ]
+    )]
     public function index()
     {
         //  Equipements
@@ -17,19 +30,16 @@ class DashboardController extends Controller
         $enPanne             = Equipment::where('status', 'en_panne')->count();
         $enMaintenance       = Equipment::where('status', 'en_maintenance')->count();
         $horsService         = Equipment::where('status', 'hors_service')->count();
-
         // Maintenances
         $totalMaintenances   = Maintenance::count();
         $maintenancesPlanifiees  = Maintenance::where('status', 'planifiee')->count();
         $maintenancesEnCours     = Maintenance::where('status', 'en_cours')->count();
         $maintenancesTerminees   = Maintenance::where('status', 'terminee')->count();
-
-        //  Pannes 
+        //  Pannes
         $totalBreakdowns     = Breakdown::count();
         $pannesOuvertes      = Breakdown::where('status', 'ouverte')->count();
         $pannesEnCours       = Breakdown::where('status', 'en_cours')->count();
         $pannesResolues      = Breakdown::where('status', 'resolue')->count();
-
         //  Pannes récentes (5 dernières)
         $pannesRecentes = Breakdown::with(['equipment', 'declaredBy'])
             ->orderBy('reported_at', 'desc')
@@ -45,7 +55,6 @@ class DashboardController extends Controller
                     'declared_by' => $breakdown->declaredBy->fullname,
                 ];
             });
-
         //  Maintenances à venir (5 prochaines)
         $maintenancesAVenir = Maintenance::with(['equipment', 'technicien'])
             ->where('status', 'planifiee')
@@ -61,7 +70,6 @@ class DashboardController extends Controller
                     'technicien' => $maintenance->technicien->fullname,
                 ];
             });
-
         return response()->json([
             'equipements' => [
                 'total'          => $totalEquipments,
@@ -71,10 +79,10 @@ class DashboardController extends Controller
                 'hors_service'   => $horsService,
             ],
             'maintenances' => [
-                'total'     => $totalMaintenances,
+                'total'      => $totalMaintenances,
                 'planifiees' => $maintenancesPlanifiees,
-                'en_cours'  => $maintenancesEnCours,
-                'terminees' => $maintenancesTerminees,
+                'en_cours'   => $maintenancesEnCours,
+                'terminees'  => $maintenancesTerminees,
             ],
             'pannes' => [
                 'total'    => $totalBreakdowns,

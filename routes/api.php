@@ -57,9 +57,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Pannes 
     Route::get('/breakdowns',      [BreakdownController::class, 'index']);
-    Route::post('/breakdowns',     [BreakdownController::class, 'store'])->middleware('role:admin,gestionnaire,technicien');
+    Route::post('/breakdowns',     [BreakdownController::class, 'store'])->middleware('role:admin,technicien');
     Route::get('/breakdowns/{id}', [BreakdownController::class, 'show']);
-    Route::put('/breakdowns/{id}', [BreakdownController::class, 'update'])->middleware('role:admin,gestionnaire,technicien');
+    Route::put('/breakdowns/{id}', [BreakdownController::class, 'update'])->middleware('role:admin,technicien');
     Route::delete('/breakdowns/{id}', [BreakdownController::class, 'destroy'])->middleware('role:admin');
 
     

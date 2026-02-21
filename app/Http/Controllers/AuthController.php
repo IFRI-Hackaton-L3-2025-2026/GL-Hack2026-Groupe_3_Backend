@@ -6,11 +6,33 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 
 
 class AuthController extends Controller
 {
-    // Connexion (personnel BMI + clients) 
+    // Connexion (personnel BMI + clients)
+    #[OA\Post(
+        path: '/api/v1/login',
+        summary: 'Connexion utilisateur',
+        description: 'Connexion pour le personnel BMI et les clients',
+        tags: ['Authentification'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'admin@bmi.bj'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password_secret')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Connexion réussie'),
+            new OA\Response(response: 401, description: 'Email ou mot de passe incorrect'),
+            new OA\Response(response: 422, description: 'Données invalides')
+        ]
+    )]
     public function login(Request $request)
     {
         $request->validate([
@@ -45,7 +67,30 @@ class AuthController extends Controller
         ], 200);
     }
 
-    //  Inscription (clients uniquement via Flutter) 
+    // Inscription (clients uniquement via Flutter)
+    #[OA\Post(
+        path: '/api/v1/register',
+        summary: 'Inscription client',
+        description: 'Inscription réservée aux clients via Flutter. Le rôle client est forcé côté serveur.',
+        tags: ['Authentification'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['fullname', 'email', 'password'],
+                properties: [
+                    new OA\Property(property: 'fullname', type: 'string', example: 'Client Test'),
+                    new OA\Property(property: 'email', type: 'string', example: 'client@test.com'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password123'),
+                    new OA\Property(property: 'phone', type: 'string', example: '97000000'),
+                    new OA\Property(property: 'address', type: 'string', example: 'Cotonou, Bénin')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Inscription réussie'),
+            new OA\Response(response: 422, description: 'Données invalides')
+        ]
+    )]
     public function register(Request $request)
     {
         $request->validate([
@@ -84,7 +129,33 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Création du personnnel par l'Admin (via React) 
+    // Création du personnel par l'Admin (via React)
+    #[OA\Post(
+        path: '/api/v1/admin/users',
+        summary: 'Créer un compte personnel',
+        description: 'Création d\'un technicien ou gestionnaire par l\'admin uniquement',
+        security: [['bearerAuth' => []]],
+        tags: ['Authentification'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['fullname', 'email', 'password', 'role'],
+                properties: [
+                    new OA\Property(property: 'fullname', type: 'string', example: 'Jean Technicien'),
+                    new OA\Property(property: 'email', type: 'string', example: 'jean@bmi.bj'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password123'),
+                    new OA\Property(property: 'phone', type: 'string', example: '97000000'),
+                    new OA\Property(property: 'role', type: 'string', enum: ['technicien', 'gestionnaire'])
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Compte créé avec succès'),
+            new OA\Response(response: 401, description: 'Non authentifié'),
+            new OA\Response(response: 403, description: 'Accès refusé — admin uniquement'),
+            new OA\Response(response: 422, description: 'Données invalides')
+        ]
+    )]
     public function createStaff(Request $request)
     {
         $request->validate([
@@ -92,7 +163,7 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'phone'    => 'nullable|string',
-            'role'     => 'required|in:technicien,gestionnaire', // admin ne peut pas créer un autre admin
+            'role'     => 'required|in:technicien,gestionnaire',
         ]);
 
         $role = Role::where('name', $request->role)->first();
@@ -118,7 +189,17 @@ class AuthController extends Controller
         ], 201);
     }
 
-    //  Déconnexion 
+    // Déconnexion
+    #[OA\Post(
+        path: '/api/v1/logout',
+        summary: 'Déconnexion',
+        security: [['bearerAuth' => []]],
+        tags: ['Authentification'],
+        responses: [
+            new OA\Response(response: 200, description: 'Déconnexion réussie'),
+            new OA\Response(response: 401, description: 'Non authentifié')
+        ]
+    )]
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
@@ -128,7 +209,17 @@ class AuthController extends Controller
         ], 200);
     }
 
-    //  Profil utilisateur connecté
+    // Profil utilisateur connecté
+    #[OA\Get(
+        path: '/api/v1/me',
+        summary: 'Profil utilisateur connecté',
+        security: [['bearerAuth' => []]],
+        tags: ['Authentification'],
+        responses: [
+            new OA\Response(response: 200, description: 'Profil retourné avec succès'),
+            new OA\Response(response: 401, description: 'Non authentifié')
+        ]
+    )]
     public function me(Request $request)
     {
         $user = $request->user()->load('role');
