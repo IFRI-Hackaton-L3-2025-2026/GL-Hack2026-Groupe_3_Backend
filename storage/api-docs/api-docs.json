@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "AI4BMI API",
-        "description": "API REST pour la plateforme AI4BMI — Gestion équipements et E-commerce BMI",
+        "title": "AI4BMI API Groupe 3",
+        "description": "API REST pour le système BMI — Gestion équipements et E-commerce BMI",
         "version": "1.0.0"
     },
     "servers": [
@@ -18,7 +18,7 @@
                     "Authentification"
                 ],
                 "summary": "Connexion utilisateur",
-                "description": "Connexion pour le personnel BMI et les clients",
+                "description": "Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes.",
                 "operationId": "da2ca4d7a5cdec77b8b45a20373535cb",
                 "requestBody": {
                     "required": true,
@@ -31,11 +31,15 @@
                                 ],
                                 "properties": {
                                     "email": {
+                                        "description": "Email de connexion",
                                         "type": "string",
+                                        "format": "email",
                                         "example": "admin@bmi.bj"
                                     },
                                     "password": {
+                                        "description": "Mot de passe sécurisé",
                                         "type": "string",
+                                        "format": "password",
                                         "example": "password_secret"
                                     }
                                 },
@@ -46,13 +50,51 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Connexion réussie"
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Connexion réussie"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123def456"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fullname": {
+                                                    "type": "string",
+                                                    "example": "Jean Dupont"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@bmi.bj"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "admin"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Email ou mot de passe incorrect"
+                        "description": "Identifiants invalides (Email ou mot de passe incorrect)"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Format des données invalide (ex: email non valide)"
                     }
                 }
             }
@@ -63,7 +105,7 @@
                     "Authentification"
                 ],
                 "summary": "Inscription client",
-                "description": "Inscription réservée aux clients via Flutter. Le rôle client est forcé côté serveur.",
+                "description": "Crée un nouveau profil utilisateur avec le rôle \"client\" par défaut.",
                 "operationId": "6796c44e1f6079c411abbfed066c5907",
                 "requestBody": {
                     "required": true,
@@ -77,24 +119,29 @@
                                 ],
                                 "properties": {
                                     "fullname": {
+                                        "description": "Nom complet du client",
                                         "type": "string",
                                         "example": "Client Test"
                                     },
                                     "email": {
                                         "type": "string",
+                                        "format": "email",
                                         "example": "client@test.com"
                                     },
                                     "password": {
                                         "type": "string",
+                                        "minLength": 6,
                                         "example": "password123"
                                     },
                                     "phone": {
                                         "type": "string",
-                                        "example": "97000000"
+                                        "example": "97000000",
+                                        "nullable": true
                                     },
                                     "address": {
                                         "type": "string",
-                                        "example": "Cotonou, Bénin"
+                                        "example": "Cotonou, Bénin",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -104,10 +151,10 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Inscription réussie"
+                        "description": "Compte client créé avec succès"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Erreur de validation ou email déjà utilisé"
                     }
                 }
             }
@@ -117,8 +164,8 @@
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Créer un compte personnel",
-                "description": "Création d'un technicien ou gestionnaire par l'admin uniquement",
+                "summary": "Créer un compte personnel (Admin only)",
+                "description": "Permet à un administrateur authentifié de créer un technicien ou un gestionnaire.",
                 "operationId": "6ab0e37ebd7fec25d941864469045645",
                 "requestBody": {
                     "required": true,
@@ -138,6 +185,7 @@
                                     },
                                     "email": {
                                         "type": "string",
+                                        "format": "email",
                                         "example": "jean@bmi.bj"
                                     },
                                     "password": {
@@ -149,6 +197,7 @@
                                         "example": "97000000"
                                     },
                                     "role": {
+                                        "description": "Le rôle professionnel à attribuer",
                                         "type": "string",
                                         "enum": [
                                             "technicien",
@@ -163,16 +212,16 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Compte créé avec succès"
+                        "description": "Compte personnel créé avec succès"
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Session non authentifiée"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Accès interdit - Droits administrateur requis"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Données invalides ou email déjà pris"
                     }
                 },
                 "security": [
@@ -188,13 +237,14 @@
                     "Authentification"
                 ],
                 "summary": "Déconnexion",
+                "description": "Invalide le jeton d'accès actuel pour déconnecter l'utilisateur proprement.",
                 "operationId": "c4eddaf1a2e990cc90e4326c0d731d41",
                 "responses": {
                     "200": {
-                        "description": "Déconnexion réussie"
+                        "description": "Session fermée avec succès"
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Utilisateur non authentifié"
                     }
                 },
                 "security": [
@@ -210,13 +260,44 @@
                     "Authentification"
                 ],
                 "summary": "Profil utilisateur connecté",
+                "description": "Récupère les détails du compte de la session active (Id, Nom, Email, Téléphone, Adresse, Rôle).",
                 "operationId": "ae2f8c1ae1f9c5aee99c01f5d13da30b",
                 "responses": {
                     "200": {
-                        "description": "Profil retourné avec succès"
+                        "description": "Profil récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fullname": {
+                                                    "type": "string",
+                                                    "example": "Jean Dupont"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@bmi.bj"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "admin"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Authentification requise"
                     }
                 },
                 "security": [
@@ -231,14 +312,57 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Liste toutes les pannes",
+                "summary": "Lister toutes les pannes",
+                "description": "Retourne une liste exhaustive des pannes incluant les relations avec les équipements et les utilisateurs.",
                 "operationId": "64d529e4d2650d4e1bc2c7d1070461f4",
                 "responses": {
                     "200": {
-                        "description": "Liste retournée avec succès"
+                        "description": "Liste des pannes récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Moteur en surchauffe"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "en_cours"
+                                            },
+                                            "equipment": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Générateur A1"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "declared_by": {
+                                                "properties": {
+                                                    "fullname": {
+                                                        "type": "string",
+                                                        "example": "Jean Technicien"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Session expirée ou jeton manquant"
                     }
                 },
                 "security": [
@@ -251,7 +375,8 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Signaler une panne",
+                "summary": "Signaler une nouvelle panne",
+                "description": "Crée un ticket de panne. Note : Seuls les techniciens et admins ont les droits complets sur cette action.",
                 "operationId": "6a7137937fda4a35f5c17251818e47b8",
                 "requestBody": {
                     "required": true,
@@ -267,16 +392,18 @@
                                 ],
                                 "properties": {
                                     "equipment_id": {
+                                        "description": "ID de l'équipement en panne",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "user_id": {
+                                        "description": "ID de l'utilisateur déclarant (technicien ou client)",
                                         "type": "integer",
                                         "example": 2
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Vibrations anormales"
+                                        "example": "Vibrations anormales au démarrage"
                                     },
                                     "priority": {
                                         "type": "string",
@@ -284,7 +411,8 @@
                                             "faible",
                                             "moyenne",
                                             "critique"
-                                        ]
+                                        ],
+                                        "example": "moyenne"
                                     },
                                     "status": {
                                         "type": "string",
@@ -292,7 +420,8 @@
                                             "ouverte",
                                             "en_cours",
                                             "resolue"
-                                        ]
+                                        ],
+                                        "example": "ouverte"
                                     },
                                     "reported_at": {
                                         "type": "string",
@@ -302,7 +431,8 @@
                                     "resolved_at": {
                                         "type": "string",
                                         "format": "date-time",
-                                        "example": null
+                                        "example": null,
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -312,13 +442,13 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Panne signalée avec succès"
+                        "description": "Ticket de panne créé avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé — admin ou technicien uniquement"
+                        "description": "Accès refusé — Droits insuffisants"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Données invalides ou équipement inexistant"
                     }
                 },
                 "security": [
@@ -333,12 +463,14 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Détail d'une panne",
+                "summary": "Consulter une panne spécifique",
+                "description": "Retourne toutes les informations d'une panne via son identifiant unique.",
                 "operationId": "e834c281bd360d02ef6b59bf7e186b22",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID unique de la panne",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -348,10 +480,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Panne retournée avec succès"
+                        "description": "Détails de la panne récupérés"
                     },
                     "404": {
-                        "description": "Panne non trouvée"
+                        "description": "Panne non trouvée dans la base de données"
                     }
                 },
                 "security": [
@@ -364,7 +496,8 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Modifier une panne",
+                "summary": "Mettre à jour une panne",
+                "description": "Permet de modifier les informations ou de marquer la panne comme résolue.",
                 "operationId": "ba3b7e35cbf081591f482f0d6de9a6b5",
                 "parameters": [
                     {
@@ -388,9 +521,11 @@
                                             "ouverte",
                                             "en_cours",
                                             "resolue"
-                                        ]
+                                        ],
+                                        "example": "resolue"
                                     },
                                     "resolved_at": {
+                                        "description": "Date de fin d'intervention",
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2026-02-20 15:00:00"
@@ -403,13 +538,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Panne modifiée avec succès"
+                        "description": "Panne mise à jour avec succès"
                     },
                     "403": {
                         "description": "Accès refusé"
                     },
                     "404": {
-                        "description": "Panne non trouvée"
+                        "description": "Panne introuvable"
                     }
                 },
                 "security": [
@@ -422,7 +557,8 @@
                 "tags": [
                     "Pannes"
                 ],
-                "summary": "Supprimer une panne",
+                "summary": "Supprimer un ticket de panne",
+                "description": "Supprime définitivement une panne du système.",
                 "operationId": "dff0c4e9d7058657741bbaaf35c7b908",
                 "parameters": [
                     {
@@ -440,10 +576,10 @@
                         "description": "Panne supprimée avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Droits administrateur requis"
                     },
                     "404": {
-                        "description": "Panne non trouvée"
+                        "description": "Le ticket n'existe plus"
                     }
                 },
                 "security": [
@@ -456,13 +592,72 @@
         "/api/v1/cart": {
             "get": {
                 "tags": [
-                    "Cart"
+                    "Panier"
                 ],
-                "summary": "Afficher le panier de l'utilisateur connecté",
+                "summary": "Voir mon panier",
+                "description": "Retourne la liste des articles dans le panier de l'utilisateur authentifié, incluant les prix unitaires et le total général.",
                 "operationId": "2721c2a7f5993ff11ef640d1ca9a2c7c",
                 "responses": {
                     "200": {
-                        "description": "Panier retourné avec succès"
+                        "description": "Contenu du panier récupéré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "cart_id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "product": {
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Pneu Michelin"
+                                                                    },
+                                                                    "price": {
+                                                                        "type": "number",
+                                                                        "example": 45000
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "string",
+                                                    "example": "90,000.00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
                     }
                 },
                 "security": [
@@ -473,13 +668,14 @@
             },
             "delete": {
                 "tags": [
-                    "Cart"
+                    "Panier"
                 ],
                 "summary": "Vider tout le panier",
+                "description": "Supprime l'intégralité des articles du panier en une seule action.",
                 "operationId": "6fb158682b5cd7446fa485ffa0de60c7",
                 "responses": {
                     "200": {
-                        "description": "Panier vidé avec succès"
+                        "description": "Panier réinitialisé avec succès"
                     }
                 },
                 "security": [
@@ -492,9 +688,10 @@
         "/api/v1/cart/items": {
             "post": {
                 "tags": [
-                    "Cart"
+                    "Panier"
                 ],
-                "summary": "Ajouter un produit au panier",
+                "summary": "Ajouter un article",
+                "description": "Ajoute un produit au panier. Bloque l'ajout si le produit est inactif ou si le stock est insuffisant.",
                 "operationId": "c16629a212180f36fb1c85298ec00d69",
                 "requestBody": {
                     "required": true,
@@ -507,10 +704,12 @@
                                 ],
                                 "properties": {
                                     "product_id": {
+                                        "description": "ID du produit à ajouter",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "quantity": {
+                                        "description": "Nombre d'unités souhaitées",
                                         "type": "integer",
                                         "example": 2
                                     }
@@ -522,13 +721,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Produit ajouté au panier"
+                        "description": "Produit ajouté avec succès"
                     },
                     "400": {
-                        "description": "Stock insuffisant"
+                        "description": "Stock insuffisant ou produit indisponible"
                     },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation des paramètres"
                     }
                 },
                 "security": [
@@ -541,14 +740,16 @@
         "/api/v1/cart/items/{cartItemId}": {
             "put": {
                 "tags": [
-                    "Cart"
+                    "Panier"
                 ],
-                "summary": "Modifier la quantité d'un article du panier",
+                "summary": "Modifier la quantité",
+                "description": "Met à jour la quantité d'un article spécifique via son ID de ligne de panier.",
                 "operationId": "ffc5bb205658709f6b392fc7271d6206",
                 "parameters": [
                     {
                         "name": "cartItemId",
                         "in": "path",
+                        "description": "ID de la ligne du panier",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -566,7 +767,7 @@
                                 "properties": {
                                     "quantity": {
                                         "type": "integer",
-                                        "example": 3
+                                        "example": 5
                                     }
                                 },
                                 "type": "object"
@@ -576,13 +777,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Quantité modifiée"
+                        "description": "Quantité mise à jour"
                     },
                     "404": {
-                        "description": "Article non trouvé"
+                        "description": "L'article n'est pas dans votre panier"
                     },
                     "400": {
-                        "description": "Stock insuffisant"
+                        "description": "Le stock est insuffisant pour cette nouvelle quantité"
                     }
                 },
                 "security": [
@@ -593,14 +794,16 @@
             },
             "delete": {
                 "tags": [
-                    "Cart"
+                    "Panier"
                 ],
-                "summary": "Supprimer un article du panier",
+                "summary": "Supprimer un article",
+                "description": "Retire définitivement une ligne de produit du panier.",
                 "operationId": "f416c58d581621bc79814764c19c76f5",
                 "parameters": [
                     {
                         "name": "cartItemId",
                         "in": "path",
+                        "description": "ID de la ligne du panier",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -609,10 +812,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Article supprimé du panier"
+                        "description": "Article retiré avec succès"
                     },
                     "404": {
-                        "description": "Article non trouvé"
+                        "description": "Article introuvable"
                     }
                 },
                 "security": [
@@ -627,15 +830,149 @@
                 "tags": [
                     "Dashboard"
                 ],
-                "summary": "Statistiques globales du tableau de bord",
-                "description": "Retourne les compteurs équipements, maintenances, pannes, pannes récentes et maintenances à venir",
+                "summary": "Récupérer les statistiques du tableau de bord",
+                "description": "Retourne un agrégat complet de données pour le dashboard : compteurs globaux et listes simplifiées des 5 derniers incidents/maintenances.",
                 "operationId": "7fcdda8cd2abe01844870b386b1c9058",
                 "responses": {
                     "200": {
-                        "description": "Statistiques retournées avec succès"
+                        "description": "Statistiques globales retournées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "equipements": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "actifs": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "en_panne": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "en_maintenance": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "hors_service": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "maintenances": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 120
+                                                },
+                                                "planifiees": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "en_cours": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "terminees": {
+                                                    "type": "integer",
+                                                    "example": 107
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "pannes": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "ouvertes": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "en_cours": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "resolues": {
+                                                    "type": "integer",
+                                                    "example": 9
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "pannes_recentes": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "equipment": {
+                                                        "type": "string",
+                                                        "example": "Climatiseur Central"
+                                                    },
+                                                    "priority": {
+                                                        "type": "string",
+                                                        "example": "critique"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "ouverte"
+                                                    },
+                                                    "reported_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "declared_by": {
+                                                        "type": "string",
+                                                        "example": "Jean Dupont"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "maintenances_a_venir": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "equipment": {
+                                                        "type": "string",
+                                                        "example": "Groupe Électrogène"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "préventive"
+                                                    },
+                                                    "start_date": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "technicien": {
+                                                        "type": "string",
+                                                        "example": "Marius Tech"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Accès non autorisé : Token invalide ou absent"
                     }
                 },
                 "security": [
@@ -650,14 +987,40 @@
                 "tags": [
                     "Catégories Équipements"
                 ],
-                "summary": "Liste toutes les catégories d'équipements",
+                "summary": "Lister toutes les catégories",
+                "description": "Retourne la liste des catégories. Le champ `equipments_count` permet de connaître le volume d'appareils par catégorie.",
                 "operationId": "a5ba651c97b03393bb9ff4dc7936dd48",
                 "responses": {
                     "200": {
-                        "description": "Liste retournée avec succès"
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Maintenance Industrielle"
+                                            },
+                                            "equipments_count": {
+                                                "description": "Nombre d'équipements liés",
+                                                "type": "integer",
+                                                "example": 12
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Non authentifié"
+                        "description": "Session non authentifiée"
                     }
                 },
                 "security": [
@@ -670,7 +1033,8 @@
                 "tags": [
                     "Catégories Équipements"
                 ],
-                "summary": "Créer une catégorie d'équipement",
+                "summary": "Créer une nouvelle catégorie",
+                "description": "Enregistre une catégorie. Utile pour filtrer les équipements par type (ex: Robotique, Informatique).",
                 "operationId": "c7aa62c73a4c41bc4f7b78356fc8c747",
                 "requestBody": {
                     "required": true,
@@ -682,8 +1046,9 @@
                                 ],
                                 "properties": {
                                     "name": {
+                                        "description": "Nom unique de la catégorie",
                                         "type": "string",
-                                        "example": "Robot"
+                                        "example": "Robotique"
                                     }
                                 },
                                 "type": "object"
@@ -696,10 +1061,10 @@
                         "description": "Catégorie créée avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Accès refusé — Droits admin requis"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Données invalides (ex: nom déjà pris)"
                     }
                 },
                 "security": [
@@ -714,12 +1079,14 @@
                 "tags": [
                     "Catégories Équipements"
                 ],
-                "summary": "Détail d'une catégorie avec ses équipements",
+                "summary": "Voir le détail d'une catégorie",
+                "description": "Retourne les informations de la catégorie et la liste des équipements associés.",
                 "operationId": "6c4bd1e233a0bbaa2766b867288fd064",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID unique de la catégorie",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -729,10 +1096,40 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Catégorie retournée avec succès"
+                        "description": "Détails retournés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "equipments": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Bras Articulé X-200"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Catégorie non trouvée"
+                        "description": "Catégorie introuvable"
                     }
                 },
                 "security": [
@@ -745,7 +1142,8 @@
                 "tags": [
                     "Catégories Équipements"
                 ],
-                "summary": "Modifier une catégorie d'équipement",
+                "summary": "Modifier une catégorie",
+                "description": "Permet de renommer une catégorie. La contrainte d'unicité du nom est conservée.",
                 "operationId": "53f9d3f94df32c29781613adc003984a",
                 "parameters": [
                     {
@@ -769,7 +1167,7 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Robot Industriel"
+                                        "example": "Robotique Industrielle"
                                     }
                                 },
                                 "type": "object"
@@ -779,13 +1177,13 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Catégorie modifiée avec succès"
+                        "description": "Catégorie renommée avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Accès interdit"
                     },
                     "404": {
-                        "description": "Catégorie non trouvée"
+                        "description": "Catégorie introuvable"
                     }
                 },
                 "security": [
@@ -798,7 +1196,8 @@
                 "tags": [
                     "Catégories Équipements"
                 ],
-                "summary": "Supprimer une catégorie d'équipement",
+                "summary": "Supprimer une catégorie",
+                "description": "Action irréversible. Impossible si la catégorie contient encore des équipements.",
                 "operationId": "3ea05e39f4ad3c003ca0268e64732133",
                 "parameters": [
                     {
@@ -813,16 +1212,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Catégorie supprimée avec succès"
+                        "description": "Catégorie supprimée"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
-                    },
-                    "404": {
-                        "description": "Catégorie non trouvée"
+                        "description": "Droits admin requis"
                     },
                     "409": {
-                        "description": "Impossible de supprimer — équipements liés"
+                        "description": "Conflit : Catégorie non vide (équipements liés)"
+                    },
+                    "404": {
+                        "description": "Catégorie introuvable"
                     }
                 },
                 "security": [
@@ -837,11 +1236,45 @@
                 "tags": [
                     "Équipements"
                 ],
-                "summary": "Liste tous les équipements",
+                "summary": "Lister tous les équipements",
+                "description": "Retourne l'inventaire complet du parc matériel.",
                 "operationId": "02b66b3bfecb572db7a59f3ab0857e03",
                 "responses": {
                     "200": {
-                        "description": "Liste retournée avec succès"
+                        "description": "Inventaire récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Compresseur Atlas Copco"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "actif"
+                                            },
+                                            "category": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Air Comprimé"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Non authentifié"
@@ -858,6 +1291,7 @@
                     "Équipements"
                 ],
                 "summary": "Créer un équipement",
+                "description": "Ajoute un nouvel équipement au système avec son statut initial.",
                 "operationId": "97a2ab8c0d93114c8bef39babf18b858",
                 "requestBody": {
                     "required": true,
@@ -898,7 +1332,8 @@
                                             "en_panne",
                                             "en_maintenance",
                                             "hors_service"
-                                        ]
+                                        ],
+                                        "example": "actif"
                                     },
                                     "location": {
                                         "type": "string",
@@ -910,7 +1345,7 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Bras articulé pour soudure"
+                                        "example": "Bras articulé pour soudure haute précision"
                                     }
                                 },
                                 "type": "object"
@@ -920,13 +1355,13 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Équipement créé avec succès"
+                        "description": "Équipement enregistré avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé"
+                        "description": "Accès refusé — Privilèges insuffisants"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Erreur de validation (ex: numéro de série déjà existant)"
                     }
                 },
                 "security": [
@@ -941,12 +1376,14 @@
                 "tags": [
                     "Équipements"
                 ],
-                "summary": "Détail d'un équipement avec ses maintenances et pannes",
+                "summary": "Voir les détails complets",
+                "description": "Récupère un équipement avec tout son historique de maintenance et de pannes.",
                 "operationId": "cf0b73415e1adbd817e7be46175c1514",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de l'équipement",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -956,10 +1393,37 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Équipement retourné avec succès"
+                        "description": "Fiche équipement récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "maintenances": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "breakdowns": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Équipement non trouvé"
+                        "description": "Équipement introuvable"
                     }
                 },
                 "security": [
@@ -973,6 +1437,7 @@
                     "Équipements"
                 ],
                 "summary": "Modifier un équipement",
+                "description": "Met à jour les informations d'une machine existante.",
                 "operationId": "2141a6f4eb5cf6d0702947ffec3826e7",
                 "parameters": [
                     {
@@ -990,27 +1455,6 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "equipment_category_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Robot KUKA KR 210"
-                                    },
-                                    "brand": {
-                                        "type": "string",
-                                        "example": "KUKA"
-                                    },
-                                    "serial_number": {
-                                        "type": "string",
-                                        "example": "KUKA-003"
-                                    },
-                                    "installation_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2024-01-15"
-                                    },
                                     "status": {
                                         "type": "string",
                                         "enum": [
@@ -1024,13 +1468,9 @@
                                         "type": "string",
                                         "example": "Zone B"
                                     },
-                                    "picture": {
-                                        "type": "string",
-                                        "example": "equipments/robot.jpg"
-                                    },
                                     "description": {
                                         "type": "string",
-                                        "example": "Bras articulé mis à jour"
+                                        "example": "Maintenance effectuée, RAS"
                                     }
                                 },
                                 "type": "object"
@@ -1040,10 +1480,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Équipement modifié avec succès"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
+                        "description": "Équipement mis à jour avec succès"
                     },
                     "404": {
                         "description": "Équipement non trouvé"
@@ -1060,6 +1497,7 @@
                     "Équipements"
                 ],
                 "summary": "Supprimer un équipement",
+                "description": "Retire définitivement l'équipement de la base de données.",
                 "operationId": "1f395b34fedb037e112a2a1a0a32bbae",
                 "parameters": [
                     {
@@ -1077,7 +1515,7 @@
                         "description": "Équipement supprimé avec succès"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Action interdite — Admin requis"
                     },
                     "404": {
                         "description": "Équipement non trouvé"
@@ -1095,11 +1533,54 @@
                 "tags": [
                     "Maintenances"
                 ],
-                "summary": "Liste toutes les maintenances",
+                "summary": "Lister toutes les maintenances",
+                "description": "Retourne la liste complète des interventions programmées, en cours ou terminées.",
                 "operationId": "d00b5b05f925da272e1ed39dde708b2f",
                 "responses": {
                     "200": {
-                        "description": "Liste retournée avec succès"
+                        "description": "Planning récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "preventive"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "planifiee"
+                                            },
+                                            "equipment": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Groupe Électrogène B12"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "technicien": {
+                                                "properties": {
+                                                    "fullname": {
+                                                        "type": "string",
+                                                        "example": "Marc Réparateur"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Non authentifié"
@@ -1115,7 +1596,8 @@
                 "tags": [
                     "Maintenances"
                 ],
-                "summary": "Planifier une maintenance",
+                "summary": "Planifier une intervention",
+                "description": "Crée un nouveau ticket de maintenance. Le coût peut être renseigné ultérieurement lors de la clôture.",
                 "operationId": "1d30017f20e239a67738f6922026cdd6",
                 "requestBody": {
                     "required": true,
@@ -1130,10 +1612,12 @@
                                 ],
                                 "properties": {
                                     "equipment_id": {
+                                        "description": "ID de l'équipement",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "user_id": {
+                                        "description": "ID du technicien assigné",
                                         "type": "integer",
                                         "example": 2
                                     },
@@ -1142,7 +1626,8 @@
                                         "enum": [
                                             "preventive",
                                             "corrective"
-                                        ]
+                                        ],
+                                        "example": "preventive"
                                     },
                                     "status": {
                                         "type": "string",
@@ -1151,7 +1636,8 @@
                                             "en_cours",
                                             "terminee",
                                             "annulee"
-                                        ]
+                                        ],
+                                        "example": "planifiee"
                                     },
                                     "start_date": {
                                         "type": "string",
@@ -1161,15 +1647,17 @@
                                     "end_date": {
                                         "type": "string",
                                         "format": "date-time",
-                                        "example": "2026-02-25 17:00:00"
+                                        "example": "2026-02-25 17:00:00",
+                                        "nullable": true
                                     },
                                     "cost": {
+                                        "description": "Coût estimé ou réel en FCFA/EUR",
                                         "type": "number",
                                         "example": 50000
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Maintenance préventive trimestrielle"
+                                        "example": "Remplacement des filtres et vidange"
                                     }
                                 },
                                 "type": "object"
@@ -1179,13 +1667,13 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Maintenance créée avec succès"
+                        "description": "Maintenance planifiée avec succès"
                     },
                     "403": {
                         "description": "Accès refusé"
                     },
                     "422": {
-                        "description": "Données invalides"
+                        "description": "Erreur de validation des dates ou IDs"
                     }
                 },
                 "security": [
@@ -1200,12 +1688,14 @@
                 "tags": [
                     "Maintenances"
                 ],
-                "summary": "Détail d'une maintenance",
+                "summary": "Voir le détail d'une maintenance",
+                "description": "Détails d'une intervention",
                 "operationId": "f2df26fffcbb00938810c316e9c20279",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID unique",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -1215,10 +1705,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Maintenance retournée avec succès"
+                        "description": "Détails récupérés"
                     },
                     "404": {
-                        "description": "Maintenance non trouvée"
+                        "description": "Maintenance introuvable"
                     }
                 },
                 "security": [
@@ -1231,7 +1721,8 @@
                 "tags": [
                     "Maintenances"
                 ],
-                "summary": "Modifier une maintenance",
+                "summary": "Mettre à jour une maintenance",
+                "description": "Permet de modifier le statut, le coût final ou la date de fin effective.",
                 "operationId": "5c45fc3734c4706751a87c8af9ee4b04",
                 "parameters": [
                     {
@@ -1256,7 +1747,8 @@
                                             "en_cours",
                                             "terminee",
                                             "annulee"
-                                        ]
+                                        ],
+                                        "example": "terminee"
                                     },
                                     "cost": {
                                         "type": "number",
@@ -1275,13 +1767,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Maintenance modifiée avec succès"
-                    },
-                    "403": {
-                        "description": "Accès refusé"
+                        "description": "Maintenance mise à jour"
                     },
                     "404": {
-                        "description": "Maintenance non trouvée"
+                        "description": "Maintenance introuvable"
                     }
                 },
                 "security": [
@@ -1295,6 +1784,7 @@
                     "Maintenances"
                 ],
                 "summary": "Supprimer une maintenance",
+                "description": "Annulation/Suppression\n* Supprime l'entrée de maintenance de la base de données.",
                 "operationId": "be6133f73ccc7290cfe737f4090914ae",
                 "parameters": [
                     {
@@ -1309,10 +1799,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Maintenance supprimée avec succès"
+                        "description": "Maintenance supprimée"
                     },
                     "403": {
-                        "description": "Accès refusé — admin uniquement"
+                        "description": "Admin uniquement"
                     },
                     "404": {
                         "description": "Maintenance non trouvée"
@@ -1552,13 +2042,36 @@
         "/api/v1/payments": {
             "get": {
                 "tags": [
-                    "Payments"
+                    "Paiements"
                 ],
-                "summary": "Lister les paiements de l'utilisateur connecté",
+                "summary": "Lister mes paiements",
+                "description": "Retourne l'historique des transactions avec les détails de la commande associée.",
                 "operationId": "93f6288713730137cdd2ac3978ca1b25",
                 "responses": {
                     "200": {
-                        "description": "Liste des paiements de l'utilisateur"
+                        "description": "Liste des paiements récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
                     }
                 },
                 "security": [
@@ -1571,17 +2084,20 @@
         "/api/v1/payments/{id}": {
             "get": {
                 "tags": [
-                    "Payments"
+                    "Paiements"
                 ],
-                "summary": "Afficher le détail d'un paiement (Utilisateur)",
+                "summary": "Détail d'un paiement",
+                "description": "Affiche les détails d'une transaction si elle appartient à l'utilisateur.",
                 "operationId": "2fab8e82d0187d3c11bda5975c6fbbd5",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID du paiement",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1590,7 +2106,7 @@
                         "description": "Paiement trouvé"
                     },
                     "403": {
-                        "description": "Accès refusé"
+                        "description": "Accès refusé - Ce paiement ne vous appartient pas"
                     },
                     "404": {
                         "description": "Paiement non trouvé"
@@ -1606,13 +2122,40 @@
         "/api/v1/admin/payments": {
             "get": {
                 "tags": [
-                    "Payments"
+                    "Paiements"
                 ],
                 "summary": "Lister tous les paiements (Admin)",
+                "description": "Vue d'ensemble de toutes les transactions financières du système.",
                 "operationId": "43f90a5db11d661f94914bfbf38375be",
                 "responses": {
                     "200": {
-                        "description": "Liste paginée de tous les paiements"
+                        "description": "Liste paginée récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 150
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit - Droits admin requis"
                     }
                 },
                 "security": [
@@ -1625,13 +2168,36 @@
         "/api/v1/product-categories": {
             "get": {
                 "tags": [
-                    "Product Categories"
+                    "Catégories Produits"
                 ],
                 "summary": "Lister toutes les catégories",
+                "description": "Retourne la liste simple de toutes les catégories enregistrées.",
                 "operationId": "f2a921cf2ce0374eb5daa828a2457c58",
                 "responses": {
                     "200": {
-                        "description": "Liste des catégories retournée avec succès"
+                        "description": "Liste des catégories retournée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
                     }
                 },
                 "security": [
@@ -1644,17 +2210,20 @@
         "/api/v1/product-categories/{id}": {
             "get": {
                 "tags": [
-                    "Product Categories"
+                    "Catégories Produits"
                 ],
                 "summary": "Afficher une catégorie",
+                "description": "Récupère les informations détaillées d'une catégorie spécifique via son ID.",
                 "operationId": "4c2606f83cba3af968178b75e8d53927",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la catégorie",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1676,9 +2245,10 @@
         "/api/v1/admin/product-categories": {
             "post": {
                 "tags": [
-                    "Product Categories"
+                    "Catégories Produits"
                 ],
                 "summary": "Créer une catégorie (Admin)",
+                "description": "Enregistre une nouvelle catégorie. Le nom doit être unique dans la base de données.",
                 "operationId": "3bc91572770020843e640a94c73d7053",
                 "requestBody": {
                     "required": true,
@@ -1695,7 +2265,7 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Toutes les pièces moteur"
+                                        "example": "Toutes les pièces moteur et composants internes"
                                     }
                                 },
                                 "type": "object"
@@ -1707,8 +2277,11 @@
                     "201": {
                         "description": "Catégorie créée avec succès"
                     },
+                    "403": {
+                        "description": "Accès refusé - Admin requis"
+                    },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation (ex: nom déjà utilisé)"
                     }
                 },
                 "security": [
@@ -1721,9 +2294,10 @@
         "/api/v1/admin/product-categories/{id}": {
             "put": {
                 "tags": [
-                    "Product Categories"
+                    "Catégories Produits"
                 ],
                 "summary": "Modifier une catégorie (Admin)",
+                "description": "Met à jour le nom ou la description d'une catégorie existante.",
                 "operationId": "dbc343547e42fc8d26494445a4682b79",
                 "parameters": [
                     {
@@ -1731,7 +2305,8 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1741,10 +2316,12 @@
                             "schema": {
                                 "properties": {
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Électricité"
                                     },
                                     "description": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Composants électriques et faisceaux"
                                     }
                                 },
                                 "type": "object"
@@ -1758,6 +2335,9 @@
                     },
                     "404": {
                         "description": "Catégorie non trouvée"
+                    },
+                    "422": {
+                        "description": "Données invalides"
                     }
                 },
                 "security": [
@@ -1768,9 +2348,10 @@
             },
             "delete": {
                 "tags": [
-                    "Product Categories"
+                    "Catégories Produits"
                 ],
                 "summary": "Supprimer une catégorie (Admin)",
+                "description": "Supprime une catégorie via son identifiant.",
                 "operationId": "99dace532ea1e6c3d1309499d2dc812c",
                 "parameters": [
                     {
@@ -1778,7 +2359,8 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1800,23 +2382,49 @@
         "/api/v1/products": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Produits"
                 ],
-                "summary": "Lister les produits avec pagination",
+                "summary": "Lister les produits",
+                "description": "Retourne une liste paginée des produits marqués comme actifs.",
                 "operationId": "7ca3593d05653d957ae7be1ac648ca44",
                 "parameters": [
                     {
                         "name": "page",
                         "in": "query",
+                        "description": "Numéro de la page",
                         "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste paginée des produits"
+                        "description": "Liste paginée retournée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 50
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1829,17 +2437,20 @@
         "/api/v1/products/{id}": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Produits"
                 ],
-                "summary": "Afficher un produit",
+                "summary": "Détail d'un produit",
+                "description": "Récupère les informations complètes d'un produit, y compris sa catégorie.",
                 "operationId": "1948ab0c6b14a722ad6d1665cd38e1f1",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID du produit",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1861,9 +2472,10 @@
         "/api/v1/admin/products": {
             "post": {
                 "tags": [
-                    "Products"
+                    "Produits"
                 ],
                 "summary": "Créer un produit (Admin)",
+                "description": "Ajoute un produit au catalogue avec possibilité d'uploader une image.",
                 "operationId": "e1305be46a3693e56106d776f51c8b07",
                 "requestBody": {
                     "required": true,
@@ -1878,26 +2490,33 @@
                                 ],
                                 "properties": {
                                     "product_category_id": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Alternateur 12V"
                                     },
                                     "description": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Alternateur haute performance pour moteurs industriels"
                                     },
                                     "price": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "example": 12500.5
                                     },
                                     "stock_quantity": {
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 15
                                     },
                                     "image": {
+                                        "description": "Fichier image (jpeg, png, webp)",
                                         "type": "string",
                                         "format": "binary"
                                     },
                                     "is_active": {
-                                        "type": "boolean"
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -1910,7 +2529,7 @@
                         "description": "Produit créé avec succès"
                     },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation des données ou du fichier"
                     }
                 },
                 "security": [
@@ -1923,9 +2542,10 @@
         "/api/v1/admin/products/{id}": {
             "post": {
                 "tags": [
-                    "Products"
+                    "Produits"
                 ],
-                "summary": "Modifier un produit (Admin) - POST avec _method=PUT pour image",
+                "summary": "Modifier un produit (Admin)",
+                "description": "Met à jour un produit existant. Si vous changez l'image, l'ancienne sera automatiquement supprimée du stockage.",
                 "operationId": "99d0984ba6db0097e7d8ca3fcb5af1bf",
                 "parameters": [
                     {
@@ -1933,7 +2553,8 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1943,6 +2564,7 @@
                             "schema": {
                                 "properties": {
                                     "_method": {
+                                        "description": "Obligatoire pour simuler un PUT avec des fichiers",
                                         "type": "string",
                                         "example": "PUT"
                                     },
@@ -1984,9 +2606,10 @@
             },
             "delete": {
                 "tags": [
-                    "Products"
+                    "Produits"
                 ],
                 "summary": "Supprimer un produit (Admin)",
+                "description": "Suppression (Admin)\n* Supprime le produit et son fichier image associé du disque public.",
                 "operationId": "80c0772847bb7843772fe9504bd82935",
                 "parameters": [
                     {
@@ -2000,7 +2623,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Produit supprimé avec succès"
+                        "description": "Produit et image supprimés avec succès"
                     },
                     "404": {
                         "description": "Produit non trouvé"
@@ -2027,43 +2650,43 @@
     "tags": [
         {
             "name": "Pannes",
-            "description": "Gestion des pannes des équipements"
+            "description": "Gestion du cycle de vie des pannes (Signalement, Suivi, Résolution)"
         },
         {
-            "name": "Cart",
-            "description": "Gestion du panier (Utilisateur connecté)"
+            "name": "Panier",
+            "description": "Gestion du panier d'achat pour les utilisateurs connectés"
         },
         {
             "name": "Dashboard",
-            "description": "Statistiques globales du tableau de bord"
+            "description": "Statistiques consolidées et indicateurs clés de performance (KPI)"
         },
         {
             "name": "Catégories Équipements",
-            "description": "Gestion des catégories d'équipements"
+            "description": "Organisation et classification du parc matériel"
         },
         {
             "name": "Équipements",
-            "description": "Gestion des équipements industriels"
+            "description": "Inventaire et cycle de vie des équipements industriels"
         },
         {
             "name": "Maintenances",
-            "description": "Gestion des maintenances des équipements"
+            "description": "Planification et suivi des interventions techniques sur le parc"
         },
         {
             "name": "Orders",
             "description": "Gestion des commandes"
         },
         {
-            "name": "Payments",
-            "description": "Consultation des paiements"
+            "name": "Paiements",
+            "description": "Consultation et historique des transactions financières"
         },
         {
-            "name": "Product Categories",
-            "description": "Gestion des catégories de produits (Admin uniquement)"
+            "name": "Catégories Produits",
+            "description": "Gestion du catalogue et des classifications de produits"
         },
         {
-            "name": "Products",
-            "description": "Gestion des produits"
+            "name": "Produits",
+            "description": "Catalogue des pièces et gestion des stocks"
         },
         {
             "name": "Authentification",

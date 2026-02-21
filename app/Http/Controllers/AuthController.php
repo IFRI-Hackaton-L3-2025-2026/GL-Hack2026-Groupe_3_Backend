@@ -8,29 +8,47 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
-
 class AuthController extends Controller
 {
-    // Connexion (personnel BMI + clients)
+    /**
+     * Authentification et Génération de Token
+     * * Permet à tout utilisateur (Admin, Staff ou Client) de se connecter. 
+     * Le système révoque automatiquement les anciens jetons pour garantir une session unique par utilisateur.
+     */
     #[OA\Post(
         path: '/api/v1/login',
         summary: 'Connexion utilisateur',
-        description: 'Connexion pour le personnel BMI et les clients',
+        description: 'Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes.',
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ['email', 'password'],
                 properties: [
-                    new OA\Property(property: 'email', type: 'string', example: 'admin@bmi.bj'),
-                    new OA\Property(property: 'password', type: 'string', example: 'password_secret')
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'admin@bmi.bj', description: 'Email de connexion'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password_secret', description: 'Mot de passe sécurisé')
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Connexion réussie'),
-            new OA\Response(response: 401, description: 'Email ou mot de passe incorrect'),
-            new OA\Response(response: 422, description: 'Données invalides')
+            new OA\Response(
+                response: 200, 
+                description: 'Connexion réussie',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Connexion réussie'),
+                        new OA\Property(property: 'token', type: 'string', example: '1|abc123def456'),
+                        new OA\Property(property: 'user', type: 'object', properties: [
+                            new OA\Property(property: 'id', type: 'integer', example: 1),
+                            new OA\Property(property: 'fullname', type: 'string', example: 'Jean Dupont'),
+                            new OA\Property(property: 'email', type: 'string', example: 'admin@bmi.bj'),
+                            new OA\Property(property: 'role', type: 'string', example: 'admin')
+                        ])
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Identifiants invalides (Email ou mot de passe incorrect)'),
+            new OA\Response(response: 422, description: 'Format des données invalide (ex: email non valide)')
         ]
     )]
     public function login(Request $request)
@@ -48,9 +66,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Supprime les anciens tokens pour éviter l'accumulation
         $user->tokens()->delete();
-
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -67,28 +83,32 @@ class AuthController extends Controller
         ], 200);
     }
 
-    // Inscription (clients uniquement via Flutter)
+    /**
+     * Inscription des Clients (Application Mobile)
+     * * Cette route est exclusivement dédiée à l'enregistrement des nouveaux clients via Flutter.
+     * Le système force l'attribution du rôle "client" pour éviter toute faille de privilèges.
+     */
     #[OA\Post(
         path: '/api/v1/register',
         summary: 'Inscription client',
-        description: 'Inscription réservée aux clients via Flutter. Le rôle client est forcé côté serveur.',
+        description: 'Crée un nouveau profil utilisateur avec le rôle "client" par défaut.',
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ['fullname', 'email', 'password'],
                 properties: [
-                    new OA\Property(property: 'fullname', type: 'string', example: 'Client Test'),
-                    new OA\Property(property: 'email', type: 'string', example: 'client@test.com'),
-                    new OA\Property(property: 'password', type: 'string', example: 'password123'),
-                    new OA\Property(property: 'phone', type: 'string', example: '97000000'),
-                    new OA\Property(property: 'address', type: 'string', example: 'Cotonou, Bénin')
+                    new OA\Property(property: 'fullname', type: 'string', example: 'Client Test', description: 'Nom complet du client'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'client@test.com'),
+                    new OA\Property(property: 'password', type: 'string', minLength: 6, example: 'password123'),
+                    new OA\Property(property: 'phone', type: 'string', nullable: true, example: '97000000'),
+                    new OA\Property(property: 'address', type: 'string', nullable: true, example: 'Cotonou, Bénin')
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Inscription réussie'),
-            new OA\Response(response: 422, description: 'Données invalides')
+            new OA\Response(response: 201, description: 'Compte client créé avec succès'),
+            new OA\Response(response: 422, description: 'Erreur de validation ou email déjà utilisé')
         ]
     )]
     public function register(Request $request)
@@ -101,7 +121,6 @@ class AuthController extends Controller
             'address'  => 'nullable|string',
         ]);
 
-        // Rôle client forcé côté serveur , jamais depuis la requête
         $clientRole = Role::where('name', 'client')->first();
 
         $user = User::create([
@@ -129,11 +148,14 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Création du personnel par l'Admin (via React)
+    /**
+     * Création de Staff (Dashboard Admin)
+     * * Réservé aux administrateurs pour enregistrer manuellement le personnel (Techniciens et Gestionnaires).
+     */
     #[OA\Post(
         path: '/api/v1/admin/users',
-        summary: 'Créer un compte personnel',
-        description: 'Création d\'un technicien ou gestionnaire par l\'admin uniquement',
+        summary: 'Créer un compte personnel (Admin only)',
+        description: 'Permet à un administrateur authentifié de créer un technicien ou un gestionnaire.',
         security: [['bearerAuth' => []]],
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
@@ -142,18 +164,18 @@ class AuthController extends Controller
                 required: ['fullname', 'email', 'password', 'role'],
                 properties: [
                     new OA\Property(property: 'fullname', type: 'string', example: 'Jean Technicien'),
-                    new OA\Property(property: 'email', type: 'string', example: 'jean@bmi.bj'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jean@bmi.bj'),
                     new OA\Property(property: 'password', type: 'string', example: 'password123'),
                     new OA\Property(property: 'phone', type: 'string', example: '97000000'),
-                    new OA\Property(property: 'role', type: 'string', enum: ['technicien', 'gestionnaire'])
+                    new OA\Property(property: 'role', type: 'string', enum: ['technicien', 'gestionnaire'], description: 'Le rôle professionnel à attribuer')
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Compte créé avec succès'),
-            new OA\Response(response: 401, description: 'Non authentifié'),
-            new OA\Response(response: 403, description: 'Accès refusé — admin uniquement'),
-            new OA\Response(response: 422, description: 'Données invalides')
+            new OA\Response(response: 201, description: 'Compte personnel créé avec succès'),
+            new OA\Response(response: 401, description: 'Session non authentifiée'),
+            new OA\Response(response: 403, description: 'Accès interdit - Droits administrateur requis'),
+            new OA\Response(response: 422, description: 'Données invalides ou email déjà pris')
         ]
     )]
     public function createStaff(Request $request)
@@ -189,15 +211,18 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Déconnexion
+    /**
+     * Déconnexion sécurisée
+     */
     #[OA\Post(
         path: '/api/v1/logout',
         summary: 'Déconnexion',
+        description: 'Invalide le jeton d\'accès actuel pour déconnecter l\'utilisateur proprement.',
         security: [['bearerAuth' => []]],
         tags: ['Authentification'],
         responses: [
-            new OA\Response(response: 200, description: 'Déconnexion réussie'),
-            new OA\Response(response: 401, description: 'Non authentifié')
+            new OA\Response(response: 200, description: 'Session fermée avec succès'),
+            new OA\Response(response: 401, description: 'Utilisateur non authentifié')
         ]
     )]
     public function logout(Request $request)
@@ -209,15 +234,32 @@ class AuthController extends Controller
         ], 200);
     }
 
-    // Profil utilisateur connecté
+    /**
+     * Consultation du profil actuel
+     * * Retourne toutes les informations liées au compte de l'utilisateur connecté.
+     */
     #[OA\Get(
         path: '/api/v1/me',
         summary: 'Profil utilisateur connecté',
+        description: 'Récupère les détails du compte de la session active (Id, Nom, Email, Téléphone, Adresse, Rôle).',
         security: [['bearerAuth' => []]],
         tags: ['Authentification'],
         responses: [
-            new OA\Response(response: 200, description: 'Profil retourné avec succès'),
-            new OA\Response(response: 401, description: 'Non authentifié')
+            new OA\Response(
+                response: 200, 
+                description: 'Profil récupéré avec succès',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'user', type: 'object', properties: [
+                            new OA\Property(property: 'id', type: 'integer', example: 1),
+                            new OA\Property(property: 'fullname', type: 'string', example: 'Jean Dupont'),
+                            new OA\Property(property: 'email', type: 'string', example: 'admin@bmi.bj'),
+                            new OA\Property(property: 'role', type: 'string', example: 'admin')
+                        ])
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Authentification requise')
         ]
     )]
     public function me(Request $request)
