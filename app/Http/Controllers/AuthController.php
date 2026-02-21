@@ -217,6 +217,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/api/v1/logout',
         summary: 'Déconnexion',
+        security: [['sanctum' => []]],
         description: 'Invalide le jeton d\'accès actuel pour déconnecter l\'utilisateur proprement.',
         security: [['bearerAuth' => []]],
         tags: ['Authentification'],
@@ -241,6 +242,7 @@ class AuthController extends Controller
     #[OA\Get(
         path: '/api/v1/me',
         summary: 'Profil utilisateur connecté',
+        security: [['sanctum' => []]],
         description: 'Récupère les détails du compte de la session active (Id, Nom, Email, Téléphone, Adresse, Rôle).',
         security: [['bearerAuth' => []]],
         tags: ['Authentification'],
