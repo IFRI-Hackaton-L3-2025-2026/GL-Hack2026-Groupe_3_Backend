@@ -30,7 +30,9 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # 7. Exposer le port 80
 EXPOSE 80
 
-RUN php artisan l5-swagger:generate
-
-# 8. Script de démarrage pour les migrations
-CMD php artisan config:clear && php artisan migrate --force && apache2-foreground
+# 8. Script de démarrage optimisé
+# On génère la doc au runtime pour qu'elle puisse lire les variables d'environnement de Render
+CMD php artisan config:clear && \
+    php artisan l5-swagger:generate && \
+    php artisan migrate --force && \
+    apache2-foreground
