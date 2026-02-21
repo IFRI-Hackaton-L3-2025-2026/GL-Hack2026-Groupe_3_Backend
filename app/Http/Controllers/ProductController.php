@@ -124,6 +124,11 @@ class ProductController extends Controller
     )]
     public function store(Request $request)
     {
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN),
+            ]);
+        }
         $validator = Validator::make($request->all(), [
             'product_category_id' => 'required|exists:product_categories,id',
             'name'                => 'required|string|max:255',
@@ -199,7 +204,11 @@ class ProductController extends Controller
                 'message' => 'Produit non trouvé',
             ], 404);
         }
-
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN),
+            ]);
+        }
         $validator = Validator::make($request->all(), [
             'product_category_id' => 'sometimes|exists:product_categories,id',
             'name'                => 'sometimes|string|max:255',
