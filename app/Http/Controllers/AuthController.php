@@ -18,7 +18,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/api/v1/login',
         summary: 'Connexion utilisateur',
-        description: 'Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes.',
+        description: 'Vérifie les identifiants et retourne un Bearer Token. Valable pour tous les types de comptes (ADMIN, GESTIONNAIRE, TECNNICIEN, CLIENTS).',
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -156,7 +156,7 @@ class AuthController extends Controller
         path: '/api/v1/admin/users',
         summary: 'Créer un compte personnel (Admin only)',
         description: 'Permet à un administrateur authentifié de créer un technicien ou un gestionnaire.',
-        security: [['bearerAuth' => []]],
+        security: [['sanctum' => []]],
         tags: ['Authentification'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -219,7 +219,6 @@ class AuthController extends Controller
         summary: 'Déconnexion',
         security: [['sanctum' => []]],
         description: 'Invalide le jeton d\'accès actuel pour déconnecter l\'utilisateur proprement.',
-        security: [['bearerAuth' => []]],
         tags: ['Authentification'],
         responses: [
             new OA\Response(response: 200, description: 'Session fermée avec succès'),
@@ -244,7 +243,6 @@ class AuthController extends Controller
         summary: 'Profil utilisateur connecté',
         security: [['sanctum' => []]],
         description: 'Récupère les détails du compte de la session active (Id, Nom, Email, Téléphone, Adresse, Rôle).',
-        security: [['bearerAuth' => []]],
         tags: ['Authentification'],
         responses: [
             new OA\Response(
