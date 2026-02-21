@@ -14,11 +14,11 @@ use OpenApi\Attributes as OA;
     scheme: "bearer",
     bearerFormat: "JWT"
 )]
+// Utilisation de la constante définie dans Render ou défaut local
 #[OA\Server(
-    url: "http://127.0.0.1:8000",
-    description: "Serveur local"
+    url: L5_SWAGGER_CONST_HOST,
+    description: "Serveur de Production / Dynamique"
 )]
-
 abstract class Controller
 {
     //
