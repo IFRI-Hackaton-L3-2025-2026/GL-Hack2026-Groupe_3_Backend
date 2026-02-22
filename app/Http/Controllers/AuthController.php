@@ -277,4 +277,103 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+    /**
+     * Liste du personnel (Admin seulement)
+     * * Récupère la liste de tous les utilisateurs enregistrés comme Techniciens ou Gestionnaires.
+     */
+    #[OA\Get(
+        path: '/api/v1/admin/staff',
+        summary: 'Liste du personnel technique et gestionnaire',
+        security: [['sanctum' => []]],
+        tags: ['Administration'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste récupérée avec succès',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'id', type: 'integer', example: 5),
+                            new OA\Property(property: 'fullname', type: 'string', example: 'Marc Technicien'),
+                            new OA\Property(property: 'email', type: 'string', example: 'marc@bmi.bj'),
+                            new OA\Property(property: 'phone', type: 'string', example: '22997000000'),
+                            new OA\Property(property: 'role', type: 'string', example: 'technicien')
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(response: 403, description: 'Accès interdit - Admin requis')
+        ]
+    )]
+    public function getStaff()
+    {
+        $staffRoles = Role::whereIn('name', ['technicien', 'gestionnaire'])->pluck('id');
+        
+        $users = User::with('role')
+            ->whereIn('role_id', $staffRoles)
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'fullname' => $user->fullname,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'role' => $user->role->name,
+                ];
+            });
+
+        return response()->json($users, 200);
+    }
+
+    /**
+     * Mise à jour du mot de passe
+     * * Permet à l'utilisateur connecté de modifier son code secret après vérification de l'ancien.
+     */
+    #[OA\Put(
+        path: '/api/v1/user/password',
+        summary: 'Changer le mot de passe',
+        description: 'Met à jour le mot de passe de l\'utilisateur authentifié.',
+        security: [['sanctum' => []]],
+        tags: ['Authentification'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['current_password', 'new_password', 'new_password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'current_password', type: 'string', example: 'ancien_password'),
+                    new OA\Property(property: 'new_password', type: 'string', minLength: 6, example: 'nouveau_password'),
+                    new OA\Property(property: 'new_password_confirmation', type: 'string', example: 'nouveau_password')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Mot de passe mis à jour avec succès'),
+            new OA\Response(response: 422, description: 'Ancien mot de passe incorrect'),
+            new OA\Response(response: 401, description: 'Non authentifié')
+        ]
+    )]
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Le mot de passe actuel est incorrect.'
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'message' => 'Mot de passe mis à jour avec succès'
+        ], 200);
+    }
 }

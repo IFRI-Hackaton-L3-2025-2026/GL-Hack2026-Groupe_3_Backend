@@ -7,8 +7,8 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8000",
-            "description": "Serveur local"
+            "url": "http://my-default-host.com",
+            "description": "Serveur de Production / Dynamique"
         }
     ],
     "paths": {
@@ -298,6 +298,117 @@
                     },
                     "401": {
                         "description": "Authentification requise"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/staff": {
+            "get": {
+                "tags": [
+                    "Administration"
+                ],
+                "summary": "Liste du personnel technique et gestionnaire",
+                "description": "Liste du personnel (Admin seulement)\n* Récupère la liste de tous les utilisateurs enregistrés comme Techniciens ou Gestionnaires.",
+                "operationId": "a650eee86d6984bc452efe70baffc68e",
+                "responses": {
+                    "200": {
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "fullname": {
+                                                "type": "string",
+                                                "example": "Marc Technicien"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "marc@bmi.bj"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "22997000000"
+                                            },
+                                            "role": {
+                                                "type": "string",
+                                                "example": "technicien"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit - Admin requis"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user/password": {
+            "put": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Changer le mot de passe",
+                "description": "Met à jour le mot de passe de l'utilisateur authentifié.",
+                "operationId": "37f8c8ccc0adb52e905d929af9b3e4d7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "ancien_password"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "minLength": 6,
+                                        "example": "nouveau_password"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "nouveau_password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe mis à jour avec succès"
+                    },
+                    "422": {
+                        "description": "Ancien mot de passe incorrect"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
                     }
                 },
                 "security": [
@@ -1803,13 +1914,36 @@
         "/api/v1/orders": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Lister les commandes de l'utilisateur connecté",
+                "summary": "Lister mes commandes",
+                "description": "Récupère l'historique personnel des commandes avec les produits et l'état du paiement.",
                 "operationId": "2fd056a400bd274a5b2278e92a8ed010",
                 "responses": {
                     "200": {
-                        "description": "Liste des commandes"
+                        "description": "Liste récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
                     }
                 },
                 "security": [
@@ -1822,13 +1956,17 @@
         "/api/v1/admin/orders": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Lister toutes les commandes (Admin)",
+                "summary": "Toutes les commandes (Admin)",
+                "description": "Vue d'ensemble de toutes les commandes du système pour la gestion logistique.",
                 "operationId": "ef8a4f1dea148feb6b901494a61d08c1",
                 "responses": {
                     "200": {
-                        "description": "Liste de toutes les commandes"
+                        "description": "Liste paginée des commandes"
+                    },
+                    "403": {
+                        "description": "Accès interdit"
                     }
                 },
                 "security": [
@@ -1841,9 +1979,10 @@
         "/api/v1/orders/{id}": {
             "get": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Afficher le détail d'une commande",
+                "summary": "Détail d'une commande",
+                "description": "Détail d'une commande",
                 "operationId": "d9752171673795b587d678236ac33a2a",
                 "parameters": [
                     {
@@ -1851,16 +1990,17 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Commande trouvée"
+                        "description": "Détails trouvés"
                     },
                     "404": {
-                        "description": "Commande non trouvée"
+                        "description": "Commande introuvable"
                     }
                 },
                 "security": [
@@ -1873,9 +2013,10 @@
         "/api/v1/orders/checkout": {
             "post": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Passer une commande (simulation paiement)",
+                "summary": "Finaliser la commande",
+                "description": "Valide le panier, vérifie les stocks, calcule les frais de port et enregistre la transaction.",
                 "operationId": "e20deff925375d32a2cdd385c75fc65e",
                 "requestBody": {
                     "required": true,
@@ -1892,10 +2033,12 @@
                                         "enum": [
                                             "pickup",
                                             "delivery"
-                                        ]
+                                        ],
+                                        "example": "delivery"
                                     },
                                     "delivery_address": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "123 Rue de la République, Paris"
                                     },
                                     "payment_method": {
                                         "type": "string",
@@ -1903,7 +2046,8 @@
                                             "cash",
                                             "card",
                                             "mobile_money"
-                                        ]
+                                        ],
+                                        "example": "card"
                                     }
                                 },
                                 "type": "object"
@@ -1916,10 +2060,10 @@
                         "description": "Commande créée avec succès"
                     },
                     "400": {
-                        "description": "Panier vide ou stock insuffisant"
+                        "description": "Panier vide ou rupture de stock"
                     },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation des champs"
                     }
                 },
                 "security": [
@@ -1932,9 +2076,10 @@
         "/api/v1/orders/{id}/cancel": {
             "put": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Annuler une commande (Utilisateur)",
+                "summary": "Annuler une commande",
+                "description": "Possible uniquement si la commande est encore \"en attente\" ou \"confirmée\".",
                 "operationId": "24bdcd53c56d333f47208db5384f4b37",
                 "parameters": [
                     {
@@ -1948,13 +2093,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Commande annulée"
+                        "description": "Commande annulée et stock réajusté"
                     },
                     "400": {
-                        "description": "Annulation impossible"
-                    },
-                    "404": {
-                        "description": "Commande non trouvée"
+                        "description": "Annulation impossible à ce stade"
                     }
                 },
                 "security": [
@@ -1967,9 +2109,10 @@
         "/api/v1/admin/orders/{id}/status": {
             "put": {
                 "tags": [
-                    "Orders"
+                    "Commandes"
                 ],
-                "summary": "Modifier le statut d'une commande (Admin)",
+                "summary": "Changer le statut (Admin)",
+                "description": "Permet de faire progresser la commande (ex: en préparation -> expédiée).",
                 "operationId": "183177ba22ebcf6aa23db298dfb97494",
                 "parameters": [
                     {
@@ -1986,9 +2129,6 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "status"
-                                ],
                                 "properties": {
                                     "status": {
                                         "type": "string",
@@ -2013,8 +2153,8 @@
                     "200": {
                         "description": "Statut mis à jour"
                     },
-                    "404": {
-                        "description": "Commande non trouvée"
+                    "422": {
+                        "description": "Statut invalide"
                     }
                 },
                 "security": [
@@ -2658,8 +2798,8 @@
             "description": "Planification et suivi des interventions techniques sur le parc"
         },
         {
-            "name": "Orders",
-            "description": "Gestion des commandes"
+            "name": "Commandes",
+            "description": "Gestion du tunnel d'achat, du suivi et de l'administration des commandes"
         },
         {
             "name": "Paiements",
@@ -2676,6 +2816,10 @@
         {
             "name": "Authentification",
             "description": "Authentification"
+        },
+        {
+            "name": "Administration",
+            "description": "Administration"
         }
     ]
 }

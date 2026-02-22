@@ -23,15 +23,22 @@ Route::prefix('v1')->group(function () {
 //  Routes protégées
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
-    // Profil & déconnexion
+   // Profil & Sécurité
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+    
+    // NOUVELLE ROUTE : Mise à jour mot de passe
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
 
-    // Création personnel — admin seulement
-    Route::post('/admin/users', [AuthController::class, 'createStaff'])
-         ->middleware('role:admin');
+    /* --- Espace Admin --- */
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/admin/users', [AuthController::class, 'createStaff']);
+        
+        // NOUVELLE ROUTE : Voir tout le personnel (Techniciens/Gestionnaires)
+        Route::get('/admin/staff', [AuthController::class, 'getStaff']);
+    });
 
-    //  Dashboard 
+    // --- Dashboard & Maintenance (Gardez vos routes existantes ici) ---
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Catégories équipements
