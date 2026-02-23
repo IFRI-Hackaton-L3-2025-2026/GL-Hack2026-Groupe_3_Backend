@@ -86,6 +86,7 @@ class AuthController extends Controller
                 'phone'    => $user->phone,
                 'address'  => $user->address,
                 'role'     => $user->role->name,
+                'is_active' => $user->is_active,
             ]
         ], 200);
     }
@@ -281,6 +282,7 @@ class AuthController extends Controller
                 'phone'    => $user->phone,
                 'address'  => $user->address,
                 'role'     => $user->role->name,
+                'is_active' => $user->is_active,
             ]
         ], 200);
     }
