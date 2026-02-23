@@ -25,6 +25,7 @@ class ClientSeeder extends Seeder
                 'phone'    => '97111111',
                 'address'  => 'Cotonou, Akpakpa',
                 'role_id'  => $clientRole->id,
+                'is_active' => true,
             ],
             [
                 'fullname' => 'Fatima Bello',
@@ -33,6 +34,7 @@ class ClientSeeder extends Seeder
                 'phone'    => '97222222',
                 'address'  => 'Cotonou, Cadjehoun',
                 'role_id'  => $clientRole->id,
+                'is_active' => true,
             ],
             [
                 'fullname' => 'Moise Dossou',
@@ -41,6 +43,7 @@ class ClientSeeder extends Seeder
                 'phone'    => '97333333',
                 'address'  => 'Cotonou, Fidjrosse',
                 'role_id'  => $clientRole->id,
+                'is_active' => true,
             ],
         ];
 

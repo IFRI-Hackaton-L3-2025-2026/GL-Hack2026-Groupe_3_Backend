@@ -13,6 +13,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UserController;
 
 // Routes publiques
 Route::prefix('v1')->group(function () {
@@ -129,6 +130,15 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
 
         // Payments — vue admin
         Route::get('payments', [PaymentController::class, 'index']);
+
+        // Clients — gestion admin
+        Route::get('clients', [UserController::class, 'index']);
+        Route::get('clients/{id}', [UserController::class, 'show']);
+        Route::put('clients/{id}/block', [UserController::class, 'block']);
+        Route::put('clients/{id}/unblock', [UserController::class, 'unblock']);
+
+        // Dashboard — vue admin
+        Route::get('dashboard/ecommerce', [DashboardController::class, 'ecommerce']);
     });
 });
 

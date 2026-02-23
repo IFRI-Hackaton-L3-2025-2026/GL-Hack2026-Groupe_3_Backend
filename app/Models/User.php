@@ -12,7 +12,11 @@ class User extends Authenticatable
 
     protected $fillable = [
         'fullname', 'email', 'password',
-        'phone', 'address', 'role_id',
+        'phone', 'address', 'role_id', 'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     protected $hidden = ['password', 'remember_token'];
