@@ -14,11 +14,18 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PasswordResetController;
 
 // Routes publiques
 Route::prefix('v1')->group(function () {
     Route::post('/login',    [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']); // clients Flutter
+
+    // Password Reset — routes publiques
+    Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
+    Route::post('verify-otp', [PasswordResetController::class, 'verifyOtp']);
+    Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
+    
 });
 
 //  Routes protégées
