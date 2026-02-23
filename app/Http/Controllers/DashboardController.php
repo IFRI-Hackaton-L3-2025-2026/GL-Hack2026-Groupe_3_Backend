@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Equipment;
 use App\Models\Maintenance;
 use App\Models\Breakdown;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\Role;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Dashboard', description: 'Statistiques consolidées et indicateurs clés de performance (KPI)')]
@@ -152,4 +157,74 @@ class DashboardController extends Controller
             'maintenances_a_venir' => $maintenancesAVenir,
         ], 200);
     }
+
+    #[OA\Get(
+    path: '/api/v1/admin/dashboard/ecommerce',
+    summary: 'Statistiques e-commerce du dashboard admin',
+    security: [['sanctum' => []]],
+    tags: ['Dashboard'],
+    responses: [
+        new OA\Response(response: 200, description: 'Statistiques e-commerce retournées avec succès')
+    ]
+)]
+public function ecommerce()
+{
+    $clientRole = Role::where('name', 'client')->first();
+
+    // Clients
+    $totalClients = User::where('role_id', $clientRole->id)->count();
+
+    // Produits
+    $totalProduits = Product::where('is_active', true)->count();
+    $stockFaible   = Product::where('is_active', true)->where('stock_quantity', '<', 5)->count();
+
+    // Commandes
+    $totalCommandes     = Order::count();
+    $commandesParStatut = Order::selectRaw('status, COUNT(*) as total')
+        ->groupBy('status')
+        ->pluck('total', 'status');
+
+    // 3 dernières commandes
+    $dernieresCommandes = Order::with('user', 'payment')
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get()
+        ->map(function ($order) {
+            return [
+                'id'            => $order->id,
+                'client'        => $order->user->fullname,
+                'montant'       => $order->total_amount,
+                'status'        => $order->status,
+                'delivery_type' => $order->delivery_type,
+                'date'          => $order->created_at,
+            ];
+        });
+
+    // Paiements
+    $chiffreAffaires      = Payment::where('status', 'successful')->sum('amount');
+    $totalRemboursements  = Payment::where('status', 'refunded')->sum('amount');
+
+    return response()->json([
+        'success' => true,
+        'data'    => [
+            'clients' => [
+                'total' => $totalClients,
+            ],
+            'produits' => [
+                'total'        => $totalProduits,
+                'stock_faible' => $stockFaible,
+            ],
+            'commandes' => [
+                'total'      => $totalCommandes,
+                'par_statut' => $commandesParStatut,
+                'dernieres'  => $dernieresCommandes,
+            ],
+            'paiements' => [
+                'chiffre_affaires'     => number_format($chiffreAffaires, 2),
+                'total_remboursements' => number_format($totalRemboursements, 2),
+            ],
+        ],
+    ], 200);
 }
+}
+

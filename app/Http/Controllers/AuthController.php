@@ -66,6 +66,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Vérification de l'état actif du compte
+        if (!$user->is_active) {
+            return response()->json([
+                'message' => 'Votre compte a été bloqué. Veuillez contacter l\'administrateur.'
+            ], 403);
+        }
+
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
