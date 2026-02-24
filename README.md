@@ -310,7 +310,8 @@ npm run dev
 -   **Module 2 — E-Commerce_Admin** : [Cliquez ici](https://gl-hack2026-groupe-3-e-commerce.onrender.com/)
 -   **Application Mobile E-commerce** : [Cliquez ici](https://drive.google.com/file/d/1kJ7m8mpq_3Mr1kvBdD0FzazdiJ2zNL0H/view?usp=drivesdk)
 -   **Vidéo de démonstration** : [Lien vidéo]()
--   **Rapport de synthèse** : [Lien document]()
+-   **Document Technique** : [Lien document](https://drive.google.com/file/d/1SeiweO-83sI3Du-mtmHNqhufPCV-cJGE/view?usp=drive_link)
+-   **Rapport de synthèse** : [Lien document](https://drive.google.com/file/d/1FbXsFuegWzYgWHpfk0GLNXU3aFmbSK_1/view?usp=drive_link)
 
 ## Licence
 
