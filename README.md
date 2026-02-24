@@ -102,6 +102,10 @@ Développer une plateforme logicielle complète permettant à BMI de **gérer se
 | **`GL-Hack2026-Groupe_3-Equipements`** | TypeScript — React | [Application Web du module 1](https://gl-hack2026-groupe-3-equipements.onrender.com/) |
 | **`GL-Hack2026-Groupe_3_E-Commerce`** | Flutter (mobile) + React (admin) | [Interface d'administration](https://gl-hack2026-groupe-3-e-commerce.onrender.com/) <br> [Application mobile (APK)](https://drive.google.com/file/d/1kJ7m8mpq_3Mr1kvBdD0FzazdiJ2zNL0H/view?usp=drivesdk) |
 
+> **NB :** Pour tester les interfaces, utilisez les identifiants d'admin suivants :
+> - **Email :** `admin@bmi.bj`
+> - **Mot de passe :** `password_secret`
+
 ### Stack Technique Détaillé
 
 **Backend**
@@ -309,10 +313,13 @@ npm run dev
 -   **Module 1 — Gestion des Équipements** : [Cliquez ici](https://gl-hack2026-groupe-3-equipements.onrender.com/)
 -   **Module 2 — E-Commerce_Admin** : [Cliquez ici](https://gl-hack2026-groupe-3-e-commerce.onrender.com/)
 -   **Application Mobile E-commerce** : [Cliquez ici](https://drive.google.com/file/d/1kJ7m8mpq_3Mr1kvBdD0FzazdiJ2zNL0H/view?usp=drivesdk)
--   **Vidéo de démonstration** : [Lien vidéo]()
+-   **Vidéo de démonstration** : [Lien vidéo](https://drive.google.com/file/d/1BPwXVH3DxIadYgXRDANF5vizTkPhkwL0/view?usp=drivesdk)
 -   **Document Technique** : [Lien document](https://drive.google.com/file/d/1SeiweO-83sI3Du-mtmHNqhufPCV-cJGE/view?usp=drive_link)
 -   **Rapport de synthèse** : [Lien document](https://drive.google.com/file/d/1FbXsFuegWzYgWHpfk0GLNXU3aFmbSK_1/view?usp=drive_link)
-
+-   
+> **NB :** Pour tester les interfaces, utilisez les identifiants d'admin suivants :
+> - **Email :** `admin@bmi.bj`
+> - **Mot de passe :** `password_secret`
 ## Licence
 
 Ce projet est réalisé dans le cadre du **Hackathon AI4BMI** organisé par l'**IFRI-UAC** (Institut de Formation et de Recherche en Informatique — Université d'Abomey-Calavi) pour le compte du Semestre 5 du cycle de Licence.
