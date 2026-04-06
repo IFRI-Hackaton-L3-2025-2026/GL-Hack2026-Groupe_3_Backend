@@ -34,5 +34,5 @@ EXPOSE 80
 # On génère la doc au runtime pour qu'elle puisse lire les variables d'environnement de Render
 CMD php artisan config:clear && \
     php artisan l5-swagger:generate && \
-    php artisan migrate --seed --force && \
+    php artisan migrate --force && \
     apache2-foreground
