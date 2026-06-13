@@ -48,8 +48,8 @@ EXPOSE 80
 # =========================
 # 8. CMD (IMPORTANT FIX)
 # =========================
-CMD php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan route:clear && \
+CMD php artisan config:clear || true && \
+    php artisan cache:clear || true && \
+    php artisan route:clear || true && \
     php artisan l5-swagger:generate && \
     apache2-foreground
